@@ -66,7 +66,11 @@ label{display:block;font-size:12px;font-weight:700;margin:10px 0 5px}
 <div class="wrap">
 <header>
   <div><h1>🥗 Fit Nutrition</h1><div class="muted">Calories, macros, fibre & key vitamins</div></div>
-  <div style="display:flex;gap:7px"><button class="secondary small" onclick="toggleDark()" id="themeBtn">🌙</button><button class="secondary small" onclick="toggleSettings()">⚙️ Goals</button></div>
+  <div style="display:flex;gap:7px">
+<button class="secondary small" onclick="toggleDark()" id="themeBtn">🌙</button>
+<button class="secondary small" onclick="toggleSettings()">⚙️ Goals</button>
+<button class="dark small" onclick="toggleData()">💾 Data</button>
+</div>
 </header>
 
 <div class="tabs">
@@ -117,7 +121,7 @@ label{display:block;font-size:12px;font-weight:700;margin:10px 0 5px}
 <label>Food</label><select id="food" onchange="calc()"></select>
 <div class="formgrid">
 <div><label>Quantity</label><input type="number" id="qty" value="100" min="0.1" step="0.1" oninput="calc()"></div>
-<div><label>Unit</label><select id="unit" onchange="calc()"><option>grams</option><option>ml</option><option>pieces</option><option>scoops</option></select></div>
+<div><label>Unit</label><select id="unit" disabled><option>grams</option><option>ml</option><option>pieces</option><option>scoops</option></select></div>
 </div>
 <div class="info" style="margin-top:12px">
 <div class="nutrient"><span>Calories</span><b id="qcal">0 kcal</b><span>Protein</span><b id="qpro">0 g</b><span>Carbs</span><b id="qcarb">0 g</b><span>Fat</span><b id="qfat">0 g</b><span>Fibre</span><b id="qfib">0 g</b></div>
@@ -149,6 +153,20 @@ label{display:block;font-size:12px;font-weight:700;margin:10px 0 5px}
 <section id="foods" style="display:none">
 <div class="card"><h2>🥘 Food Database</h2><input id="dbSearch" placeholder="Search foods..." oninput="renderFoodDB()"><div id="foodDB" style="margin-top:10px"></div></div>
 </section>
+
+<div class="card settings" id="dataPanel">
+<h2>💾 Data & Backup</h2>
+<p class="muted">Your entries are stored locally in this browser. Use backup regularly so you don't lose your data.</p>
+<div class="addrow">
+<button onclick="exportJSON()">⬇️ Export Backup</button>
+<button class="secondary" onclick="importJSON()">⬆️ Import Backup</button>
+</div>
+<div class="addrow">
+<button class="dark" onclick="exportCSV()">📊 Export CSV</button>
+<button class="danger" onclick="clearAll()">🗑️ Clear All Data</button>
+</div>
+<p class="tiny">Export Backup creates a complete JSON backup. CSV is useful for Excel/Google Sheets.</p>
+</div>
 
 <div class="card settings" id="settings">
 <h2>🎯 Your Nutrition Targets</h2>
@@ -224,19 +242,40 @@ function calc(){
  ["qcal","qpro","qcarb","qfat","qfib"].forEach((id,i)=>$(id).textContent=fmt(vals[i])+(i==0?" kcal":" g"));
 }
 function addFood(){
- let f=selectedFood();let q=+$("qty").value||0;if(!f||q<=0)return alert("Enter a valid quantity.");
+ let f=selectedFood();
+ let q=Number($("qty").value);
+ if(!f){alert("Please select a food.");return}
+ if(!Number.isFinite(q)||q<=0){alert("Please enter a valid quantity.");$("qty").focus();return}
  let factor=(f.unit=="grams"||f.unit=="ml")?q/100:q;
- let entry={id:Date.now(),date:day(),meal:$("meal").value,food:f.name,qty:q,unit:f.unit,
- cal:(f.cal||0)*factor,pro:(f.pro||0)*factor,carb:(f.carb||0)*factor,fat:(f.fat||0)*factor,fib:(f.fib||0)*factor,
- ca:(f.ca||0)*factor,fe:(f.fe||0)*factor,k:(f.k||0)*factor,vc:(f.vc||0)*factor,vd:(f.vd||0)*factor,b12:(f.b12||0)*factor};
- db.logs.push(entry);save();render();
- $("qty").value=f.unit=="pieces"||f.unit=="scoops"?1:100;calc();
+ let entry={
+   id:Date.now(),date:day(),meal:$("meal").value,food:f.name,qty:q,unit:f.unit,
+   cal:(f.cal||0)*factor,pro:(f.pro||0)*factor,carb:(f.carb||0)*factor,
+   fat:(f.fat||0)*factor,fib:(f.fib||0)*factor,
+   ca:(f.ca||0)*factor,fe:(f.fe||0)*factor,k:(f.k||0)*factor,
+   vc:(f.vc||0)*factor,vd:(f.vd||0)*factor,b12:(f.b12||0)*factor
+ };
+ db.logs.push(entry);
+ save();
+ render();
+ alert("✓ "+f.name+" added to "+entry.meal);
+ $("qty").value=(f.unit=="pieces"||f.unit=="scoops")?1:100;
+ calc();
 }
 function addCustom(){
- let name=prompt("Food name");if(!name)return;
- let cal=+prompt("Calories for this serving")||0,pro=+prompt("Protein (g)")||0,carb=+prompt("Carbs (g)")||0,fat=+prompt("Fat (g)")||0,fib=+prompt("Fibre (g)")||0;
- let entry={id:Date.now(),date:day(),meal:$("meal").value,food:name,qty:1,unit:"serving",cal,pro,carb,fat,fib,ca:0,fe:0,k:0,vc:0,vd:0,b12:0,custom:true};
- db.logs.push(entry);save();render();
+ let name=prompt("Food name / serving name");
+ if(!name || !name.trim()) return;
+ let cal=Number(prompt("Calories per serving")||0);
+ let pro=Number(prompt("Protein (g) per serving")||0);
+ let carb=Number(prompt("Carbs (g) per serving")||0);
+ let fat=Number(prompt("Fat (g) per serving")||0);
+ let fib=Number(prompt("Fibre (g) per serving")||0);
+ if(cal<0||pro<0||carb<0||fat<0||fib<0){alert("Nutrition values cannot be negative.");return;}
+ let entry={id:Date.now(),date:day(),meal:$("meal").value,food:name.trim(),qty:1,unit:"serving",
+ cal,pro,carb,fat,fib,ca:0,fe:0,k:0,vc:0,vd:0,b12:0,custom:true};
+ db.logs.push(entry);
+ save();
+ render();
+ alert(name.trim()+" added to "+$("meal").value+".");
 }
 function addWater(x){db.water[day()]=(db.water[day()]||0)+x;save();render()}
 function dayLogs(){return db.logs.filter(x=>x.date==day())}
@@ -293,6 +332,22 @@ function renderFoodDB(){
  $("foodDB").innerHTML=foodList().filter(f=>f.name.toLowerCase().includes(q)||f.cat.toLowerCase().includes(q)).map(f=>`<div class="foodrow"><span><b>${f.name}</b><br><span class="tiny">${f.cat} · per ${f.unit=="pieces"||f.unit=="scoops"?f.unit:"100 "+f.unit}</span></span><span><b>${fmt(f.cal)} kcal</b><br><span class="tiny">P ${fmt(f.pro)} · C ${fmt(f.carb)} · F ${fmt(f.fat)} · Fi ${fmt(f.fib)}</span></span></div>`).join("");
 }
 function exportJSON(){let b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="fit-nutrition-backup.json";a.click()}
+function toggleData(){
+ $("dataPanel").classList.toggle("open");
+}
+function exportCSV(){
+ if(!db.logs.length){alert("No food entries to export.");return}
+ let rows=[["Date","Meal","Food","Quantity","Unit","Calories","Protein (g)","Carbs (g)","Fat (g)","Fibre (g)","Calcium (mg)","Iron (mg)","Potassium (mg)","Vitamin C (mg)","Vitamin D (ug)","B12 (ug)"]];
+ db.logs.forEach(x=>rows.push([x.date,x.meal,x.food,x.qty,x.unit,fmt(x.cal),fmt(x.pro),fmt(x.carb),fmt(x.fat),fmt(x.fib),fmt(x.ca),fmt(x.fe),fmt(x.k),fmt(x.vc),fmt(x.vd),fmt(x.b12)]));
+ let csv=rows.map(r=>r.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\n");
+ let b=new Blob([csv],{type:"text/csv;charset=utf-8"}),a=document.createElement("a");
+ a.href=URL.createObjectURL(b);a.download="fit-nutrition-food-log.csv";document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(a.href);
+}
+function clearAll(){
+ if(!confirm("Delete ALL food, water and nutrition history? This cannot be undone unless you have a backup."))return;
+ db={goals:{cal:2200,pro:140,carb:250,fat:70,fib:30,water:3000},logs:[],water:{}};
+ save();render();alert("All data cleared.");
+}
 function importJSON(){let i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=()=>{let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();render();alert("Backup restored.")}catch(e){alert("Invalid backup file.")}};r.readAsText(i.files[0])};i.click()}
 if(localStorage.getItem("fitNutritionDark")=="1"){
  document.body.classList.add("darkmode");
