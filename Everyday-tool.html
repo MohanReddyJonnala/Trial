@@ -100,16 +100,13 @@ function toast(t){$("toast").textContent=t;$("toast").classList.remove("hidden")
 function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("[data-n]").forEach(x=>x.classList.toggle("active",x.dataset.n===id));render()}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function init(){
- if(!db.profile)db.profile={name:"You",income:140000,cash:500000,emergency:300000,house:8000000,years:5};
- db.expenses=db.expenses||[
-  {date:today(),item:"Groceries",cat:"Groceries",amount:1800},
-  {date:today(),item:"Dinner",cat:"Food",amount:650},
-  {date:today(),item:"Fuel",cat:"Travel",amount:1200}
- ];
- db.loans=db.loans||[{name:"Personal Loan",principal:800000,rate:10.5,emi:35000,remaining:30}];
- db.investments=db.investments||[{name:"Mutual Fund SIP",type:"Mutual Fund",value:450000,sip:30000}];
- db.goals=db.goals||[{name:"House",target:db.profile.house,current:db.profile.cash*.25,monthly:40000,rate:10}];
- db.chat=db.chat||[];save();
+ if(!db.profile)db.profile={name:"",income:0,cash:0,emergency:0,house:0,years:0};
+ db.expenses=db.expenses||[];
+ db.loans=db.loans||[];
+ db.investments=db.investments||[];
+ db.goals=db.goals||[{name:"House",target:0,current:0,monthly:0,rate:10}];
+ db.chat=db.chat||[];
+ save();
 }
 function saveProfile(){db.profile={name:$("pName").value||"You",income:+$("pIncome").value||0,cash:+$("pCash").value||0,emergency:+$("pEmergency").value||0,house:+$("pHouse").value||8000000,years:+$("pYears").value||5};db.goals[0].target=db.profile.house;save();render();toast("Profile saved")}
 function monthlyExpenses(){return db.expenses.filter(x=>x.date.startsWith(month())).reduce((a,x)=>a+x.amount,0)}
