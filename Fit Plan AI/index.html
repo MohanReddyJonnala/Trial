@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0b1020">
+<title>FitPlan AI</title>
+<style>
+:root{--bg:#070b16;--card:#11182a;--card2:#172038;--text:#f4f7fb;--muted:#9ba7bc;--line:#27334d;--accent:#7c5cff;--accent2:#21d4a5;--danger:#ff6b7a}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh}.app{max-width:720px;margin:auto;padding-bottom:90px}.screen{display:none;padding:18px}.screen.active{display:block}
+h1,h2,h3,p{margin-top:0}.muted{color:var(--muted)}button,input,select,textarea{font:inherit}
+button{border:0;border-radius:14px;padding:13px 16px;background:var(--accent);color:white;font-weight:700;cursor:pointer}
+button.secondary{background:var(--card2)}button.danger{background:#43202a;color:#ffb4be}
+.field{margin:12px 0}.field label{display:block;font-size:13px;color:var(--muted);margin-bottom:7px}
+input,select,textarea{width:100%;background:#0d1424;border:1px solid var(--line);color:var(--text);border-radius:12px;padding:12px;outline:none}
+textarea{min-height:80px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin:12px 0}.hero{background:linear-gradient(135deg,#1b2140,#241652);border:0}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{padding:8px 11px;border-radius:999px;background:var(--card2);color:var(--muted);font-size:12px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}.stat b{display:block;font-size:22px;margin-top:5px}.stat span{font-size:11px;color:var(--muted)}
+.top{padding:22px 18px 8px}.eyebrow{color:#b8adff;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(8,12,24,.94);border-top:1px solid var(--line);backdrop-filter:blur(14px);z-index:10;display:flex;justify-content:center}
+.nav-inner{width:min(720px,100%);display:grid;grid-template-columns:repeat(5,1fr);padding:8px 5px calc(8px + env(safe-area-inset-bottom))}
+.nav button{background:none;color:var(--muted);padding:8px 3px;font-size:11px}.nav button.active{color:white}.nav .ico{font-size:20px;display:block}
+.progress{height:9px;background:#202a40;border-radius:20px;overflow:hidden}.progress>i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.exercise{background:#0d1424;border:1px solid var(--line);border-radius:16px;padding:14px;margin:10px 0}.exercise .name{font-weight:800}.small{font-size:12px;color:var(--muted)}
+.badge{font-size:11px;padding:5px 8px;border-radius:8px;background:#202943}.hidden{display:none!important}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:30;display:flex;align-items:flex-end}.modal-box{width:min(720px,100%);max-height:90vh;overflow:auto;background:var(--card);border-radius:24px 24px 0 0;padding:20px}
+.toast{position:fixed;left:50%;bottom:95px;transform:translateX(-50%);background:#f4f7fb;color:#111;padding:10px 14px;border-radius:12px;font-size:13px;z-index:50}
+.list{display:grid;gap:8px}.empty{text-align:center;padding:30px;color:var(--muted)}
+@media(min-width:650px){.app{padding-top:10px}.nav{position:sticky;top:0;bottom:auto;border:0}.nav-inner{order:-1}.nav button{padding:12px}.screen{padding:22px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="onboarding" class="screen">
+    <div class="top">
+      <div class="eyebrow">FitPlan AI</div>
+      <h1>Build your plan.</h1>
+      <p class="muted">A practical workout planner that adapts to your goal, experience, schedule and progress.</p>
+    </div>
+    <div class="card">
+      <div class="field"><label>Name</label><input id="pName" placeholder="Your name"></div>
+      <div class="grid">
+        <div class="field"><label>Age</label><input id="pAge" type="number" min="13" max="100"></div>
+        <div class="field"><label>Gender</label><select id="pGender"><option value="">Prefer not to say</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+      </div>
+      <div class="grid">
+        <div class="field"><label>Height (cm)</label><input id="pHeight" type="number" min="100" max="250"></div>
+        <div class="field"><label>Weight (kg)</label><input id="pWeight" type="number" min="25" max="300" step=".1"></div>
+      </div>
+      <div class="field"><label>Target weight (kg)</label><input id="pTarget" type="number" min="25" max="300" step=".1"></div>
+      <div class="field"><label>Fitness goal</label><select id="pGoal"><option>Fat loss</option><option>Muscle gain</option><option>Body recomposition</option><option>Strength</option><option>General fitness</option><option>Endurance</option></select></div>
+      <div class="field"><label>Fitness level</label><select id="pLevel"><option>Beginner</option><option selected>Intermediate</option><option>Advanced</option></select></div>
+      <div class="field"><label>Gym experience</label><input id="pExp" placeholder="e.g. 2 years"></div>
+      <div class="grid">
+        <div class="field"><label>Workout days/week</label><select id="pDays"><option>2</option><option>3</option><option>4</option><option selected>5</option><option>6</option></select></div>
+        <div class="field"><label>Session duration</label><select id="pDuration"><option>30</option><option>45</option><option selected>60</option><option>75</option><option>90</option></select></div>
+      </div>
+      <div class="field"><label>Equipment</label><select id="pEquipment"><option>Full gym</option><option>Dumbbells</option><option>Barbell</option><option>Machines</option><option>Home equipment</option><option>Bodyweight only</option></select></div>
+      <div class="field"><label>Body type (optional)</label><select id="pBody"><option value="">Not sure</option><option>Ectomorph</option><option>Mesomorph</option><option>Endomorph</option></select></div>
+      <button style="width:100%" onclick="saveProfile(true)">Create My Plan</button>
+      <p class="small" style="margin-top:12px">Body-type labels are broad physique descriptions, not scientifically precise predictors of training response.</p>
+    </div>
+  </section>
+
+  <section id="home" class="screen">
+    <div class="top"><div class="eyebrow">FitPlan AI</div><h2 id="welcome">Welcome back</h2><p class="muted">Your plan adapts as you train.</p></div>
+    <div class="card hero"><div class="row"><div><div class="small">Current weight</div><h1 id="homeWeight">--</h1></div><div><div class="small">Target</div><h2 id="homeTarget">--</h2></div></div><div class="progress"><i id="weightBar" style="width:0%"></i></div><p class="small" id="weightText" style="margin-top:9px"></p></div>
+    <div class="grid3"><div class="stat"><span>BMI</span><b id="sBMI">--</b></div><div class="stat"><span>This week</span><b id="sWeek">0</b></div><div class="stat"><span>Streak</span><b id="sStreak">0</b></div></div>
+    <div class="grid3"><div class="stat"><span>Total workouts</span><b id="sTotal">0</b></div><div class="stat"><span>Volume</span><b id="sVolume">0</b></div><div class="stat"><span>PRs</span><b id="sPR">0</b></div></div>
+    <div class="card"><div class="row"><h3>Today's workout</h3><span class="badge" id="todayBadge"></span></div><h2 id="todayName"></h2><p class="muted" id="todayMeta"></p><button onclick="show('workout')">Start Workout</button></div>
+    <div class="card"><h3>Smart insight</h3><p id="insight" class="muted"></p></div>
+  </section>
+
+  <section id="workout" class="screen">
+    <div class="top"><div class="eyebrow">Training</div><h2>Today's Workout</h2><p class="muted">Log your sets and compare against your last performance.</p></div>
+    <div id="workoutContent"></div>
+  </section>
+
+  <section id="progress" class="screen">
+    <div class="top"><div class="eyebrow">Progress</div><h2>Your Progress</h2></div>
+    <div class="card"><div class="row"><h3>Weight</h3><button class="secondary" onclick="openWeight()">+ Add</button></div><div id="weightStats"></div><div id="weightChart" style="height:140px;margin-top:12px"></div></div>
+    <div class="card"><h3>Measurements</h3><div class="grid"><input id="mWaist" type="number" placeholder="Waist cm"><input id="mChest" type="number" placeholder="Chest cm"><input id="mArms" type="number" placeholder="Arms cm"><input id="mThighs" type="number" placeholder="Thighs cm"></div><button style="margin-top:10px" onclick="saveMeasurements()">Save measurements</button></div>
+    <div class="card"><h3>Personal Records</h3><div id="prList" class="list"></div></div>
+    <div class="card"><h3>Workout History</h3><div id="history" class="list"></div></div>
+  </section>
+
+  <section id="ai" class="screen">
+    <div class="top"><div class="eyebrow">AI Coach</div><h2>Ask your coach 🧠</h2><p class="muted">AI integration is optional. The local coach works without an API.</p></div>
+    <div class="card"><div id="chat" class="list"></div><textarea id="question" placeholder="e.g. Should I increase my bench press?"></textarea><button style="margin-top:10px;width:100%" onclick="askCoach()">Ask Coach</button></div>
+    <div class="card"><h3>AI integration</h3><p class="small">Production note: never expose a real API secret in client-side JavaScript. Configure a secure backend/serverless endpoint in the AI_CONFIG section.</p></div>
+  </section>
+
+  <section id="profile" class="screen">
+    <div class="top"><div class="eyebrow">Profile</div><h2>Your Profile</h2></div>
+    <div id="profileCard"></div>
+    <div class="card"><h3>Data</h3><div class="grid"><button onclick="exportData()">Export Backup</button><button class="secondary" onclick="document.getElementById('importFile').click()">Import Backup</button></div><input id="importFile" class="hidden" type="file" accept=".json" onchange="importData(event)"><button class="danger" style="margin-top:10px;width:100%" onclick="resetData()">Reset App</button></div>
+    <div class="card"><h3>Safety</h3><p class="small">This app provides general fitness information and estimates, not medical advice. If you have an injury, medical condition, chest pain, fainting, severe shortness of breath or other concerning symptoms, stop exercising and seek appropriate medical attention.</p></div>
+  </section>
+</div>
+
+<div id="modal" class="modal hidden" onclick="if(event.target===this)closeModal()"><div class="modal-box"><div class="row"><h2 id="modalTitle"></h2><button class="secondary" onclick="closeModal()">Close</button></div><div id="modalBody"></div></div></div>
+<div id="toast" class="toast hidden"></div>
+
+<div class="nav hidden" id="nav"><div class="nav-inner">
+<button onclick="show('home')" data-nav="home"><span class="ico">🏠</span>Home</button>
+<button onclick="show('workout')" data-nav="workout"><span class="ico">🏋️</span>Workout</button>
+<button onclick="show('progress')" data-nav="progress"><span class="ico">📊</span>Progress</button>
+<button onclick="show('ai')" data-nav="ai"><span class="ico">🧠</span>AI Coach</button>
+<button onclick="show('profile')" data-nav="profile"><span class="ico">👤</span>Profile</button>
+</div></div>
+
+<script>
+/*
+  FitPlan AI — single-file client app.
+  AI_CONFIG:
+  For production, keep secrets on a secure backend/serverless function.
+*/
+const AI_CONFIG={enabled:false,endpoint:"",apiKey:""};
+const KEY="fitplanAI_v1";
+
+const exercises=[
+["Bench Press","Chest","Triceps, shoulders","Barbell","Intermediate","Compound","Press from chest with controlled descent.","3-4","6-10","90s",["Dumbbell Bench Press","Push Ups"]],
+["Incline Bench Press","Chest","Triceps, shoulders","Barbell","Intermediate","Compound","Lower the bar toward upper chest while keeping shoulder blades stable.","3-4","8-12","90s",["Incline Dumbbell Press"]],
+["Dumbbell Bench Press","Chest","Triceps, shoulders","Dumbbells","Beginner","Compound","Press dumbbells upward while keeping wrists stacked.","3-4","8-12","90s",["Bench Press"]],
+["Incline Dumbbell Press","Chest","Triceps, shoulders","Dumbbells","Beginner","Compound","Press dumbbells on an incline bench.","3","8-12","75s",["Incline Bench Press"]],
+["Chest Fly","Chest","Shoulders","Machines","Beginner","Isolation","Bring handles together without excessive shoulder stretch.","3","10-15","60s",["Cable Crossover"]],
+["Cable Crossover","Chest","Shoulders","Machines","Beginner","Isolation","Bring cables together with a slight elbow bend.","3","10-15","60s",["Chest Fly"]],
+["Push Ups","Chest","Triceps","Bodyweight","Beginner","Compound","Maintain a straight body line and control the descent.","3","8-15","60s",["Dumbbell Bench Press"]],
+["Lat Pulldown","Back","Biceps","Machines","Beginner","Compound","Pull the bar toward the upper chest without swinging.","3-4","8-12","75s",["Assisted Pull Ups"]],
+["Pull Ups","Back","Biceps","Bodyweight","Advanced","Compound","Pull chest toward the bar while keeping control.","3","5-10","120s",["Assisted Pull Ups"]],
+["Assisted Pull Ups","Back","Biceps","Machines","Beginner","Compound","Use assistance to perform controlled full-range pulls.","3","6-10","90s",["Lat Pulldown"]],
+["Seated Cable Row","Back","Biceps","Machines","Beginner","Compound","Pull toward the torso and squeeze shoulder blades.","3-4","8-12","75s",["Dumbbell Row"]],
+["Barbell Row","Back","Biceps","Barbell","Advanced","Compound","Brace the torso and row toward the lower ribs.","3-4","6-10","90s",["Chest Supported Row"]],
+["Dumbbell Row","Back","Biceps","Dumbbells","Beginner","Compound","Support the torso and pull elbow toward hip.","3","8-12","75s",["Seated Cable Row"]],
+["Chest Supported Row","Back","Biceps","Dumbbells","Intermediate","Compound","Keep chest supported and row with controlled tempo.","3","8-12","75s",["Dumbbell Row"]],
+["Straight Arm Pulldown","Back","Lats","Machines","Beginner","Isolation","Pull the bar down using the lats with soft elbows.","3","10-15","60s",["Lat Pulldown"]],
+["Overhead Press","Shoulders","Triceps","Barbell","Intermediate","Compound","Press overhead while keeping ribs controlled.","3-4","6-10","90s",["Dumbbell Shoulder Press"]],
+["Dumbbell Shoulder Press","Shoulders","Triceps","Dumbbells","Beginner","Compound","Press dumbbells overhead without excessive back arch.","3","8-12","75s",["Overhead Press"]],
+["Lateral Raise","Shoulders","Side delts","Dumbbells","Beginner","Isolation","Raise arms to shoulder height with control.","3","12-20","60s",["Cable Lateral Raise"]],
+["Front Raise","Shoulders","Front delts","Dumbbells","Beginner","Isolation","Raise weights in front without swinging.","2-3","10-15","60s",["Dumbbell Shoulder Press"]],
+["Rear Delt Fly","Shoulders","Rear delts","Dumbbells","Beginner","Isolation","Move arms out while keeping the neck relaxed.","3","12-20","60s",["Face Pull"]],
+["Face Pull","Shoulders","Upper back","Machines","Beginner","Isolation","Pull rope toward face while rotating hands outward.","3","12-20","60s",["Rear Delt Fly"]],
+["Barbell Curl","Biceps","Forearms","Barbell","Beginner","Isolation","Curl without swinging the torso.","3","8-12","60s",["Cable Curl"]],
+["Dumbbell Curl","Biceps","Forearms","Dumbbells","Beginner","Isolation","Curl with controlled eccentric phase.","3","8-12","60s",["Barbell Curl"]],
+["Hammer Curl","Biceps","Forearms","Dumbbells","Beginner","Isolation","Keep neutral grip and curl smoothly.","3","10-15","60s",["Dumbbell Curl"]],
+["Preacher Curl","Biceps","Forearms","Machines","Beginner","Isolation","Keep upper arms supported throughout the curl.","3","10-15","60s",["Cable Curl"]],
+["Cable Curl","Biceps","Forearms","Machines","Beginner","Isolation","Curl against constant cable tension.","3","10-15","60s",["Preacher Curl"]],
+["Triceps Pushdown","Triceps","Shoulders","Machines","Beginner","Isolation","Extend elbows while keeping upper arms close to torso.","3","10-15","60s",["Overhead Triceps Extension"]],
+["Overhead Triceps Extension","Triceps","Shoulders","Dumbbells","Beginner","Isolation","Lower weight behind head and extend elbows.","3","10-15","60s",["Triceps Pushdown"]],
+["Skull Crushers","Triceps","Shoulders","Barbell","Intermediate","Isolation","Lower bar with controlled elbow movement.","3","8-12","75s",["Overhead Triceps Extension"]],
+["Dips","Triceps","Chest","Bodyweight","Intermediate","Compound","Lower under control and press through the handles.","3","6-12","90s",["Close Grip Bench Press"]],
+["Close Grip Bench Press","Triceps","Chest","Barbell","Intermediate","Compound","Use a comfortable narrow grip and controlled range.","3","6-10","90s",["Dips"]],
+["Squat","Legs","Glutes, core","Barbell","Intermediate","Compound","Brace, descend under control, and drive through the floor.","3-4","6-10","120s",["Goblet Squat","Leg Press"]],
+["Leg Press","Legs","Glutes","Machines","Beginner","Compound","Lower the platform with control and avoid locking knees hard.","3-4","8-15","90s",["Squat"]],
+["Romanian Deadlift","Hamstrings","Glutes, back","Barbell","Intermediate","Compound","Hinge at hips while keeping spine neutral.","3","6-10","120s",["Dumbbell Romanian Deadlift"]],
+["Leg Curl","Hamstrings","Calves","Machines","Beginner","Isolation","Curl the pad smoothly toward the body.","3","10-15","60s",["Romanian Deadlift"]],
+["Leg Extension","Quadriceps","Knees","Machines","Beginner","Isolation","Extend knees smoothly without jerking.","3","10-15","60s",["Leg Press"]],
+["Lunges","Legs","Glutes","Dumbbells","Beginner","Compound","Step forward and lower under control.","3","8-12/leg","75s",["Bulgarian Split Squat"]],
+["Bulgarian Split Squat","Legs","Glutes","Dumbbells","Intermediate","Compound","Keep front foot stable and descend vertically.","3","8-12/leg","90s",["Lunges"]],
+["Calf Raise","Calves","Soleus","Machines","Beginner","Isolation","Use full comfortable range and pause at the top.","3-4","10-20","60s",["Bodyweight Calf Raise"]],
+["Hip Thrust","Glutes","Hamstrings","Barbell","Beginner","Compound","Drive hips upward and pause at lockout.","3","8-12","90s",["Glute Bridge"]],
+["Goblet Squat","Legs","Core","Dumbbells","Beginner","Compound","Hold one dumbbell at chest and squat with control.","3","10-15","75s",["Leg Press"]],
+["Plank","Core","Abs","Bodyweight","Beginner","Isometric","Brace the abdomen and keep a straight line.","3","30-60s","45s",["Side Plank"]],
+["Side Plank","Core","Obliques","Bodyweight","Beginner","Isometric","Keep hips stacked and body straight.","3","20-45s/side","45s",["Plank"]],
+["Hanging Leg Raise","Core","Hip flexors","Bodyweight","Advanced","Isolation","Raise legs without excessive swinging.","3","8-15","60s",["Leg Raise"]],
+["Leg Raise","Core","Hip flexors","Bodyweight","Beginner","Isolation","Lower legs slowly and keep core braced.","3","10-15","60s",["Hanging Leg Raise"]],
+["Cable Crunch","Core","Abs","Machines","Beginner","Isolation","Curl the torso using the abs rather than pulling with arms.","3","10-15","60s",["Bicycle Crunch"]],
+["Bicycle Crunch","Core","Obliques","Bodyweight","Beginner","Isolation","Rotate torso slowly while extending opposite leg.","3","12-20/side","45s",["Cable Crunch"]]
+];
+
+function $(id){return document.getElementById(id)}
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}}
+let db=load();
+const save=()=>localStorage.setItem(KEY,JSON.stringify(db));
+const todayISO=()=>new Date().toISOString().slice(0,10);
+function toast(t){$("toast").textContent=t;$("toast").classList.remove("hidden");setTimeout(()=>$("toast").classList.add("hidden"),1800)}
+function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");if(id!=="onboarding")$("nav").classList.remove("hidden");document.querySelectorAll("[data-nav]").forEach(x=>x.classList.toggle("active",x.dataset.nav===id));render()}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function bmi(p){return p.height&&p.weight?(p.weight/Math.pow(p.height/100,2)):0}
+function bmiCat(v){return v<18.5?"Underweight":v<25?"Healthy range":v<30?"Overweight":"Obesity range"}
+function healthyRange(p){if(!p.height)return"--";let h=p.height/100;return (18.5*h*h).toFixed(1)+"–"+(24.9*h*h).toFixed(1)+" kg"}
+function calorie(p){if(!p.age||!p.weight||!p.height)return null;let b=10*p.weight+6.25*p.height-5*p.age+(p.gender==="Female"?-161:5);return Math.round(b*(p.goal==="Fat loss"?1.45:p.goal==="Muscle gain"?1.6:1.5))}
+function daysAgo(d){return Math.round((new Date(todayISO())-new Date(d))/86400000)}
+function workoutDates(){return (db.history||[]).map(x=>x.date)}
+function streak(){let s=0,d=new Date(todayISO());let set=new Set(workoutDates());while(set.has(d.toISOString().slice(0,10))){s++;d.setDate(d.getDate()-1)}return s}
+function workoutsThisWeek(){let n=0;for(const d of workoutDates())if(daysAgo(d)>=0&&daysAgo(d)<7)n++;return n}
+function split(days){
+ const base=days<=2?["Full Body A","Full Body B"]:days===3?["Full Body A","Full Body B","Full Body C"]:days===4?["Upper Body","Lower Body","Upper Body","Lower Body"]:days===5?["Chest + Triceps","Back + Biceps","Legs","Shoulders + Arms","Upper Body"]:["Push","Pull","Legs","Upper","Lower","Conditioning"];
+ return base;
+}
+function byName(names){return names.map(n=>exercises.find(e=>e[0]===n)).filter(Boolean)}
+function planFor(p){
+ const d=Number(p.days||5), names=split(d), map={
+ "Chest + Triceps":["Bench Press","Incline Dumbbell Press","Chest Fly","Triceps Pushdown","Overhead Triceps Extension"],
+ "Back + Biceps":["Lat Pulldown","Seated Cable Row","Dumbbell Row","Barbell Curl","Hammer Curl"],
+ "Legs":["Squat","Leg Press","Romanian Deadlift","Leg Curl","Calf Raise","Plank"],
+ "Shoulders + Arms":["Dumbbell Shoulder Press","Lateral Raise","Rear Delt Fly","Hammer Curl","Triceps Pushdown"],
+ "Upper Body":["Bench Press","Lat Pulldown","Dumbbell Shoulder Press","Seated Cable Row","Dumbbell Curl","Triceps Pushdown"],
+ "Lower Body":["Squat","Romanian Deadlift","Leg Press","Leg Curl","Calf Raise","Plank"],
+ "Push":["Bench Press","Incline Dumbbell Press","Dumbbell Shoulder Press","Lateral Raise","Triceps Pushdown"],
+ "Pull":["Lat Pulldown","Seated Cable Row","Chest Supported Row","Hammer Curl","Face Pull"],
+ "Upper":["Bench Press","Lat Pulldown","Dumbbell Shoulder Press","Seated Cable Row","Dumbbell Curl","Triceps Pushdown"],
+ "Lower":["Squat","Romanian Deadlift","Leg Press","Lunges","Leg Curl","Calf Raise"],
+ "Conditioning":["Goblet Squat","Push Ups","Dumbbell Row","Lunges","Plank","Bicycle Crunch"],
+ "Full Body A":["Goblet Squat","Dumbbell Bench Press","Lat Pulldown","Dumbbell Shoulder Press","Hammer Curl","Plank"],
+ "Full Body B":["Leg Press","Incline Dumbbell Press","Seated Cable Row","Lateral Raise","Triceps Pushdown","Leg Raise"],
+ "Full Body C":["Lunges","Push Ups","Dumbbell Row","Hip Thrust","Face Pull","Cable Crunch"]
+ };
+ return names.map((n,i)=>({day:i+1,name:n,exercises:map[n]||map["Full Body A"]}));
+}
+function saveProfile(first=false){
+ const p={name:$("pName").value.trim()||"Athlete",age:+$("pAge").value,height:+$("pHeight").value,weight:+$("pWeight").value,target:+$("pTarget").value,gender:$("pGender").value,goal:$("pGoal").value,level:$("pLevel").value,exp:$("pExp").value.trim(),days:+$("pDays").value,duration:+$("pDuration").value,equipment:$("pEquipment").value,body:$("pBody").value};
+ if(!p.age||!p.height||!p.weight||!p.target){toast("Please complete age, height and weight.");return}
+ db.profile=p;db.plan=planFor(p);db.weights=db.weights||[{date:todayISO(),weight:p.weight}];db.history=db.history||[];db.measurements=db.measurements||[];db.prs=db.prs||{};db.chat=db.chat||[];save();show("home");toast(first?"Your plan is ready!":"Profile saved")}
+function todayWorkout(){let p=db.profile, plan=db.plan||planFor(p);let idx=(new Date().getDay()+6)%7;return plan[idx%plan.length]}
+function render(){
+ if(!db.profile){$("onboarding").classList.add("active");$("nav").classList.add("hidden");return}
+ let p=db.profile, b=bmi(p), w=db.weights?.length?db.weights[db.weights.length-1].weight:p.weight;
+ $("welcome").textContent="Hi, "+p.name+" 👋";$("homeWeight").textContent=w.toFixed(1)+" kg";$("homeTarget").textContent=p.target.toFixed(1)+" kg";$("sBMI").textContent=b?b.toFixed(1):"--";$("sWeek").textContent=workoutsThisWeek();$("sStreak").textContent=streak();$("sTotal").textContent=(db.history||[]).length;$("sVolume").textContent=Math.round(totalVolume());$("sPR").textContent=Object.keys(db.prs||{}).length;
+ let diff=w-p.target;let start=p.weight-p.target;let pct=Math.max(0,Math.min(100, start?((p.weight-w)/start)*100:0));$("weightBar").style.width=pct+"%";$("weightText").textContent=diff>0?diff.toFixed(1)+" kg from target":Math.abs(diff).toFixed(1)+" kg below target";
+ let tw=todayWorkout();$("todayName").textContent=tw.name;$("todayBadge").textContent="Day "+tw.day;$("todayMeta").textContent=tw.exercises.length+" exercises • ~"+p.duration+" min • "+p.goal;
+ renderWorkout(tw);renderProgress();renderProfile();renderChat();
+}
+function renderWorkout(tw){
+ $("workoutContent").innerHTML=`<div class="card hero"><h2>${esc(tw.name)}</h2><p class="small">${tw.exercises.length} exercises • ${db.profile.duration} min • ${esc(db.profile.goal)}</p></div>`+
+ tw.exercises.map(n=>{let e=exercises.find(x=>x[0]===n);return `<div class="exercise"><div class="row"><div><div class="name">${esc(e[0])}</div><div class="small">${esc(e[1])} • ${esc(e[4])}</div></div><span class="badge">${e[7]} × ${e[8]}</span></div><div class="chips" style="margin:10px 0"><span class="chip">Rest ${e[9]}</span><span class="chip">${esc(e[3])}</span></div><button class="secondary" onclick='openExercise(${JSON.stringify(e[0])})'>View & Log</button></div>`}).join("")+
+ `<button style="width:100%;margin-top:8px" onclick="completeWorkout()">Complete Workout</button>`;
+}
+function openExercise(name){
+ let e=exercises.find(x=>x[0]===name), last=(db.history||[]).flatMap(h=>h.exercises||[]).filter(x=>x.name===name).pop();
+ let sets=last?.sets?.length?last.sets.map((s,i)=>`<div class="grid"><input id="wt${i}" type="number" min="0" step=".5" placeholder="kg" value="${s.weight||""}"><input id="rp${i}" type="number" min="0" placeholder="reps" value="${s.reps||""}"></div>`).join(""):`<div class="grid"><input id="wt0" type="number" min="0" step=".5" placeholder="kg"><input id="rp0" type="number" min="0" placeholder="reps"></div>`;
+ $("modalTitle").textContent=e[0];$("modalBody").innerHTML=`<p class="muted">${esc(e[6])}</p><p><b>Muscles:</b> ${esc(e[1])}, ${esc(e[2])}</p><p><b>Plan:</b> ${e[7]} sets × ${e[8]} reps • Rest ${e[9]}</p><p class="small"><b>Common mistakes:</b> rushing reps, losing control, excessive momentum or using a load you cannot safely control.</p><h3>Log sets</h3><div id="setRows">${sets}</div><button class="secondary" onclick="addSetRow()">+ Add Set</button><button style="width:100%;margin-top:10px" onclick='saveExercise(${JSON.stringify(e[0])})'>Save Exercise</button><div class="card" style="margin-top:12px"><b>Alternatives</b><p class="small">${e[10].join(" • ")}</p></div>`;$("modal").classList.remove("hidden")
+}
+function addSetRow(){let i=document.querySelectorAll("#setRows .grid").length;let d=document.createElement("div");d.className="grid";d.innerHTML=`<input id="wt${i}" type="number" min="0" step=".5" placeholder="kg"><input id="rp${i}" type="number" min="0" placeholder="reps">`;$("setRows").appendChild(d)}
+function saveExercise(name){
+ let sets=[...document.querySelectorAll("#setRows .grid")].map((_,i)=>({weight:+$("wt"+i).value||0,reps:+$("rp"+i).value||0})).filter(s=>s.weight>0&&s.reps>0);if(!sets.length){toast("Add at least one completed set.");return}
+ db.current=db.current||{};db.current[name]={name,sets};save();closeModal();toast("Exercise saved")
+}
+function completeWorkout(){
+ let tw=todayWorkout(), ex=Object.values(db.current||{}).filter(x=>tw.exercises.includes(x.name));if(!ex.length){toast("Log at least one exercise first.");return}
+ let vol=ex.reduce((a,e)=>a+e.sets.reduce((s,x)=>s+x.weight*x.reps,0),0);
+ db.history=db.history||[];db.history.push({date:todayISO(),name:tw.name,duration:db.profile.duration,exercises:ex,volume:vol});detectPR(ex);db.current={};save();render();toast("Workout completed 🎉")
+}
+function detectPR(ex){
+ db.prs=db.prs||{};ex.forEach(e=>{let best=Math.max(...e.sets.map(s=>s.weight));let old=db.prs[e.name]?.weight||0;if(best>old)db.prs[e.name]={weight:best,reps:e.sets.find(s=>s.weight===best)?.reps||0,date:todayISO()}})
+}
+function totalVolume(){return (db.history||[]).reduce((a,h)=>a+(h.volume||0),0)}
+function renderProgress(){
+ let ws=db.weights||[], p=db.profile, cur=ws.length?ws[ws.length-1].weight:p.weight, start=ws[0]?.weight||p.weight;
+ $("weightStats").innerHTML=`<div class="grid3"><div class="stat"><span>Starting</span><b>${start.toFixed(1)}</b></div><div class="stat"><span>Current</span><b>${cur.toFixed(1)}</b></div><div class="stat"><span>Target</span><b>${p.target.toFixed(1)}</b></div></div>`;
+ let min=Math.min(...ws.map(x=>x.weight),p.target),max=Math.max(...ws.map(x=>x.weight),p.weight);let range=max-min||1;
+ $("weightChart").innerHTML=`<div class="small">Weight trend</div><div style="display:flex;align-items:flex-end;height:110px;gap:5px">${ws.slice(-20).map(x=>`<div title="${x.date}: ${x.weight} kg" style="flex:1;height:${20+((x.weight-min)/range)*80}px;background:linear-gradient(var(--accent),var(--accent2));border-radius:5px 5px 0 0"></div>`).join("")}</div>`;
+ $("prList").innerHTML=Object.entries(db.prs||{}).map(([n,x])=>`<div class="exercise"><div class="row"><b>${esc(n)}</b><span class="badge">🏆 ${x.weight} kg × ${x.reps}</span></div><div class="small">${x.date}</div></div>`).join("")||`<div class="empty">No PRs yet. Complete a workout to start tracking.</div>`;
+ $("history").innerHTML=(db.history||[]).slice().reverse().slice(0,20).map(h=>`<div class="exercise"><div class="row"><b>${esc(h.name)}</b><span class="badge">${h.date}</span></div><div class="small">${h.exercises.length} exercises • ${h.volume||0} kg volume • ${h.duration} min</div></div>`).join("")||`<div class="empty">No completed workouts yet.</div>`;
+}
+function renderProfile(){
+ let p=db.profile,b=bmi(p),cal=calorie(p);$("profileCard").innerHTML=`<div class="card"><div class="row"><div><h2>${esc(p.name)}</h2><p class="muted">${p.goal} • ${p.level}</p></div><button class="secondary" onclick="editProfile()">Edit</button></div><div class="grid"><div class="stat"><span>BMI</span><b>${b.toFixed(1)}</b><small>${bmiCat(b)}</small></div><div class="stat"><span>Healthy weight estimate</span><b>${healthyRange(p)}</b></div></div><p class="small" style="margin-top:12px">Estimated calorie target: ${cal?cal+" kcal/day":"not enough data"}. Estimates only; not medical advice.</p></div>`}
+function editProfile(){
+ let p=db.profile;["Name","Age","Gender","Height","Weight","Target","Goal","Level","Exp","Days","Duration","Equipment","Body"].forEach(k=>{let id="p"+k; if($(id)) $(id).value=p[{Name:"name",Age:"age",Gender:"gender",Height:"height",Weight:"weight",Target:"target",Goal:"goal",Level:"level",Exp:"exp",Days:"days",Duration:"duration",Equipment:"equipment",Body:"body"}[k]]||""});show("onboarding")
+}
+function saveMeasurements(){db.measurements=db.measurements||[];db.measurements.push({date:todayISO(),waist:+$("mWaist").value||null,chest:+$("mChest").value||null,arms:+$("mArms").value||null,thighs:+$("mThighs").value||null});save();toast("Measurements saved")}
+function openWeight(){$("modalTitle").textContent="Add Weight";$("modalBody").innerHTML=`<div class="field"><label>Date</label><input id="newWDate" type="date" value="${todayISO()}"></div><div class="field"><label>Weight (kg)</label><input id="newW" type="number" step=".1" min="25" max="300"></div><button style="width:100%" onclick="saveWeight()">Save</button>`;$("modal").classList.remove("hidden")}
+function saveWeight(){let w=+$("newW").value;if(!w){toast("Enter weight.");return}db.weights=db.weights||[];db.weights.push({date:$("newWDate").value||todayISO(),weight:w});db.weights.sort((a,b)=>a.date.localeCompare(b.date));db.profile.weight=w;save();closeModal();render();toast("Weight saved")}
+function closeModal(){$("modal").classList.add("hidden")}
+function renderChat(){$("chat").innerHTML=(db.chat||[]).slice(-12).map(x=>`<div class="card" style="margin:0"><b>${x.role==="user"?"You":"Coach"}</b><p style="margin:7px 0 0">${esc(x.text)}</p></div>`).join("")||`<div class="empty">Ask me about your workout, progression, exercises or consistency.</div>`}
+function localCoach(q){
+ let p=db.profile, b=bmi(p), lower=q.toLowerCase(), last=db.history?.[db.history.length-1];
+ if(lower.includes("increase")||lower.includes("weight")&&lower.includes("bench"))return "Use progressive overload gradually. If you can complete the top of your planned rep range with good technique across your working sets, consider a small increase next session. If form breaks down, keep the load and improve reps first.";
+ if(lower.includes("replace")||lower.includes("alternative"))return "Choose an alternative that trains the same primary movement pattern and muscle group. For example, squat can be replaced by leg press or goblet squat depending on your equipment and experience.";
+ if(lower.includes("lose")||lower.includes("fat"))return "For fat loss, focus on a sustainable calorie deficit, adequate protein, resistance training and regular activity. Track your weekly weight trend rather than reacting to one day's scale reading.";
+ if(lower.includes("eat")||lower.includes("protein"))return "Aim for regular balanced meals with a protein source, vegetables/fruit and appropriate carbohydrates/fats. A post-workout meal does not need to be immediate; total daily nutrition matters more.";
+ if(lower.includes("days")||lower.includes("train"))return `Your current plan uses ${p.days} training days/week. Consistency and recovery matter more than maximizing days. If recovery or schedule becomes difficult, reduce volume rather than forcing extra sessions.`;
+ if(last)return `Based on your current ${p.goal.toLowerCase()} goal and ${p.level.toLowerCase()} level, keep progressing gradually and log your sets. Your last completed session was ${last.name}.`;
+ return "Start with the generated workout, log your sets, and use your progress data to guide gradual increases. Ask me a specific question for a more targeted suggestion.";
+}
+async function askCoach(){
+ let q=$("question").value.trim();if(!q)return;db.chat=db.chat||[];db.chat.push({role:"user",text:q});$("question").value="";
+ let answer=localCoach(q);
+ if(AI_CONFIG.enabled&&AI_CONFIG.endpoint){try{let r=await fetch(AI_CONFIG.endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:q,profile:db.profile,history:db.history||[]})});let j=await r.json();answer=j.answer||answer}catch(e){answer+="\n\nAI service was unavailable, so I used the local coach."}}
+ db.chat.push({role:"assistant",text:answer});save();renderChat()
+}
+function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="fitplan-ai-backup.json";a.click();URL.revokeObjectURL(a.href)}
+function importData(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();location.reload()}catch(e){toast("Invalid backup file")}};r.readAsText(f)}
+function resetData(){if(confirm("Reset all FitPlan AI data on this device?")){localStorage.removeItem(KEY);location.reload()}}
+if(!db.profile){
+ db.profile={name:"Demo Athlete",age:29,height:175,weight:90,target:75,gender:"Male",goal:"Fat loss",level:"Intermediate",exp:"2 years",days:5,duration:60,equipment:"Full gym",body:"Not sure"};
+ db.plan=planFor(db.profile);db.weights=[{date:todayISO(),weight:90}];db.history=[{date:new Date(Date.now()-86400000).toISOString().slice(0,10),name:"Chest + Triceps",duration:60,volume:4200,exercises:[{name:"Bench Press",sets:[{weight:45,reps:8}]}]}];db.prs={"Bench Press":{weight:45,reps:8,date:db.history[0].date}};db.measurements=[];db.chat=[];save()
+}
+show("home");
+if("serviceWorker" in navigator && location.protocol!=="file:"){navigator.serviceWorker.register("./service-worker.js").catch(()=>{})}
+</script>
+</body>
+</html>
