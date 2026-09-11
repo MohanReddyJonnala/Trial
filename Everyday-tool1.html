@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08111f">
+<title>Personal Finance OS</title>
+<style>
+:root{--bg:#070b14;--card:#101827;--card2:#172235;--text:#f4f7fb;--muted:#93a1b7;--line:#26334b;--a:#6d5dfc;--b:#22c997;--warn:#f5b942;--red:#ff6b7a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select{font:inherit}button{border:0;border-radius:13px;padding:12px 14px;background:var(--a);color:#fff;font-weight:750}button.secondary{background:var(--card2)}button.danger{background:#40202a;color:#ffb7c0}
+.app{max-width:760px;margin:auto;padding-bottom:92px}.screen{display:none;padding:18px}.screen.active{display:block}.top{padding:18px 0 5px}.eyebrow{font-size:11px;letter-spacing:.15em;color:#aaa1ff;font-weight:800;text-transform:uppercase}h1,h2,h3,p{margin-top:0}.muted,.small{color:var(--muted)}.small{font-size:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;margin:12px 0}.hero{background:linear-gradient(135deg,#191a40,#101e3c);border:0}.row{display:flex;align-items:center;justify-content:space-between;gap:10px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.stat{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:13px}.stat span{font-size:11px;color:var(--muted)}.stat b{display:block;font-size:20px;margin-top:5px}.field{margin:11px 0}.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:6px}input,select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0b1321;color:var(--text);outline:none}.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(7,11,20,.95);border-top:1px solid var(--line);backdrop-filter:blur(14px);z-index:20}.navin{max-width:760px;margin:auto;display:grid;grid-template-columns:repeat(5,1fr);padding:7px 4px calc(7px + env(safe-area-inset-bottom))}.nav button{background:none;color:var(--muted);font-size:10px;padding:6px 2px}.nav button.active{color:#fff}.ico{display:block;font-size:19px}.bar{height:9px;background:#222d43;border-radius:20px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--a),var(--b))}.item{background:#0d1422;border:1px solid var(--line);border-radius:15px;padding:13px;margin:8px 0}.pill{font-size:10px;padding:5px 8px;border-radius:8px;background:var(--card2);color:var(--muted)}.list{display:grid;gap:8px}.empty{text-align:center;padding:25px;color:var(--muted)}.modal{position:fixed;inset:0;background:#000b;z-index:30;display:flex;align-items:flex-end}.modal.hidden{display:none}.modalbox{width:min(760px,100%);max-height:92vh;overflow:auto;background:var(--card);border-radius:24px 24px 0 0;padding:20px}.toast{position:fixed;z-index:50;bottom:100px;left:50%;transform:translateX(-50%);background:#fff;color:#111;padding:10px 14px;border-radius:12px;font-size:13px}.toast.hidden{display:none}.good{color:var(--b)}.warn{color:var(--warn)}.bad{color:var(--red)}.chart{height:150px;display:flex;align-items:flex-end;gap:5px;padding-top:15px}.chart div{flex:1;min-width:4px;border-radius:5px 5px 0 0;background:linear-gradient(var(--a),var(--b));position:relative}.chart div span{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:8px;color:var(--muted)}
+@media(min-width:650px){.screen{padding:22px}.nav{position:sticky;top:0;bottom:auto}.app{padding-top:0}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="home" class="screen">
+ <div class="top"><div class="eyebrow">Personal Finance OS</div><h2 id="hello">Your Money</h2><p class="muted">See where your money went — and what to do next.</p></div>
+ <div class="card hero"><div class="small">Estimated Net Worth</div><h1 id="networth">₹0</h1><div class="grid3"><div><span class="small">Cash</span><b id="cash">₹0</b></div><div><span class="small">Investments</span><b id="investments">₹0</b></div><div><span class="small">Debt</span><b id="debt">₹0</b></div></div></div>
+ <div class="grid3"><div class="stat"><span>Income</span><b id="income">₹0</b></div><div class="stat"><span>Spent</span><b id="spent">₹0</b></div><div class="stat"><span>Invested</span><b id="invested">₹0</b></div></div>
+ <div class="card"><div class="row"><h3>House Goal</h3><span class="pill" id="housePct">0%</span></div><h2 id="houseSaved">₹0 / ₹80L</h2><div class="bar"><i id="houseBar" style="width:0%"></i></div><p class="small" id="houseText"></p><button onclick="show('goals')">View Goal</button></div>
+ <div class="card"><h3>Money Coach</h3><p id="insight" class="muted"></p></div>
+ <div class="card"><div class="row"><h3>Top Spending</h3><button class="secondary" onclick="show('expenses')">Details</button></div><div id="topSpend"></div></div>
+</section>
+
+<section id="expenses" class="screen">
+ <div class="top"><div class="eyebrow">Cash Flow</div><h2>Expenses</h2><p class="muted">Track spending and discover patterns.</p></div>
+ <div class="grid3"><div class="stat"><span>This month</span><b id="eMonth">₹0</b></div><div class="stat"><span>Daily avg</span><b id="eAvg">₹0</b></div><div class="stat"><span>Transactions</span><b id="eCount">0</b></div></div>
+ <div class="card"><button style="width:100%" onclick="openExpense()">＋ Add Expense</button></div>
+ <div class="card"><h3>Category Breakdown</h3><div id="categories"></div></div>
+ <div class="card"><h3>Recent Expenses</h3><div id="expenseList" class="list"></div></div>
+</section>
+
+<section id="goals" class="screen">
+ <div class="top"><div class="eyebrow">Goals</div><h2>Financial Goals</h2></div>
+ <div class="card hero"><div class="small">House Goal</div><h1 id="gHouse">₹0</h1><p id="gHouseMeta" class="small"></p><div class="bar"><i id="gBar" style="width:0%"></i></div></div>
+ <div class="card"><h3>Goal Calculator</h3><div class="field"><label>Target amount (₹)</label><input id="goalTarget" type="number"></div><div class="field"><label>Current amount (₹)</label><input id="goalCurrent" type="number"></div><div class="field"><label>Monthly contribution (₹)</label><input id="goalMonthly" type="number"></div><div class="field"><label>Expected annual return (%)</label><input id="goalReturn" type="number" step=".1" value="10"></div><button onclick="calculateGoal()">Calculate</button><div id="goalResult" style="margin-top:12px"></div></div>
+ <div class="card"><h3>What if?</h3><div id="scenarios"></div></div>
+</section>
+
+<section id="debt" class="screen">
+ <div class="top"><div class="eyebrow">Debt</div><h2>Loans & EMIs</h2></div>
+ <div class="grid3"><div class="stat"><span>Outstanding</span><b id="dOutstanding">₹0</b></div><div class="stat"><span>Monthly EMI</span><b id="dEmi">₹0</b></div><div class="stat"><span>Loans</span><b id="dCount">0</b></div></div>
+ <div class="card"><button style="width:100%" onclick="openLoan()">＋ Add Loan</button></div>
+ <div id="loanList"></div>
+ <div class="card"><h3>Prepayment calculator</h3><p class="small">Compare extra monthly payments against your current loan assumptions.</p><div class="grid"><input id="extraPay" type="number" placeholder="Extra/month"><button onclick="prepay()">Calculate</button></div><div id="prepayResult" style="margin-top:10px"></div></div>
+</section>
+
+<section id="invest" class="screen">
+ <div class="top"><div class="eyebrow">Investments</div><h2>Portfolio</h2></div>
+ <div class="grid3"><div class="stat"><span>Portfolio</span><b id="iTotal">₹0</b></div><div class="stat"><span>Monthly SIP</span><b id="iSip">₹0</b></div><div class="stat"><span>Assets</span><b id="iCount">0</b></div></div>
+ <div class="card"><button style="width:100%" onclick="openInvestment()">＋ Add Investment</button></div>
+ <div id="investList" class="list"></div>
+ <div class="card"><h3>Allocation</h3><div id="allocation"></div></div>
+</section>
+
+<section id="ai" class="screen">
+ <div class="top"><div class="eyebrow">Money Coach</div><h2>Ask your coach 🧠</h2><p class="muted">Local advice works without an API. Add a secure backend later for real AI.</p></div>
+ <div class="card"><div id="chat" class="list"></div><input id="q" placeholder="e.g. Can I afford a ₹1 lakh phone?"><button style="width:100%;margin-top:10px" onclick="ask()">Ask Coach</button></div>
+ <div class="card"><h3>AI setup</h3><p class="small">Never put a production API secret in this HTML. Use a secure server/serverless endpoint. The optional AI_CONFIG is provided in the source.</p></div>
+</section>
+
+<section id="profile" class="screen">
+ <div class="top"><div class="eyebrow">Settings</div><h2>My Finance Profile</h2></div>
+ <div class="card">
+  <div class="field"><label>Name</label><input id="pName"></div>
+  <div class="field"><label>Monthly income (₹)</label><input id="pIncome" type="number"></div>
+  <div class="field"><label>Cash / bank balance (₹)</label><input id="pCash" type="number"></div>
+  <div class="field"><label>Emergency fund target (₹)</label><input id="pEmergency" type="number"></div>
+  <div class="field"><label>House target (₹)</label><input id="pHouse" type="number"></div>
+  <div class="field"><label>House purchase horizon (years)</label><input id="pYears" type="number" step=".5"></div>
+  <button style="width:100%" onclick="saveProfile()">Save Profile</button>
+ </div>
+ <div class="card"><h3>Backup</h3><div class="grid"><button onclick="exportData()">Export</button><button class="secondary" onclick="$('file').click()">Import</button></div><input id="file" class="hidden" type="file" accept=".json" onchange="importData(event)"><button class="danger" style="width:100%;margin-top:10px" onclick="resetAll()">Reset all data</button></div>
+</section>
+</div>
+
+<div class="nav"><div class="navin">
+<button data-n="home" onclick="show('home')"><span class="ico">🏠</span>Home</button>
+<button data-n="expenses" onclick="show('expenses')"><span class="ico">💸</span>Spend</button>
+<button data-n="goals" onclick="show('goals')"><span class="ico">🎯</span>Goals</button>
+<button data-n="invest" onclick="show('invest')"><span class="ico">📈</span>Invest</button>
+<button data-n="profile" onclick="show('profile')"><span class="ico">👤</span>More</button>
+</div></div>
+
+<div id="modal" class="modal hidden" onclick="if(event.target===this)closeModal()"><div class="modalbox"><div class="row"><h2 id="mtitle"></h2><button class="secondary" onclick="closeModal()">Close</button></div><div id="mbody"></div></div></div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+const KEY="personalFinanceOS_v1";
+const AI_CONFIG={enabled:false,endpoint:"",apiKey:""};
+let db=(()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch(e){return {}}})();
+const $=id=>document.getElementById(id), save=()=>localStorage.setItem(KEY,JSON.stringify(db));
+const money=n=>"₹"+Math.round(n||0).toLocaleString("en-IN");
+const today=()=>new Date().toISOString().slice(0,10);
+const month=()=>today().slice(0,7);
+function toast(t){$("toast").textContent=t;$("toast").classList.remove("hidden");setTimeout(()=>$("toast").classList.add("hidden"),1800)}
+function show(id){document.querySelectorAll(".screen").forEach(x=>x.classList.remove("active"));$(id).classList.add("active");document.querySelectorAll("[data-n]").forEach(x=>x.classList.toggle("active",x.dataset.n===id));render()}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function init(){
+ if(!db.profile)db.profile={name:"",income:0,cash:0,emergency:0,house:0,years:0};
+ db.expenses=db.expenses||[];
+ db.loans=db.loans||[];
+ db.investments=db.investments||[];
+ db.goals=db.goals||[{name:"House",target:0,current:0,monthly:0,rate:10}];
+ db.chat=db.chat||[];
+ save();
+}
+function saveProfile(){db.profile={name:$("pName").value||"You",income:+$("pIncome").value||0,cash:+$("pCash").value||0,emergency:+$("pEmergency").value||0,house:+$("pHouse").value||8000000,years:+$("pYears").value||5};db.goals[0].target=db.profile.house;save();render();toast("Profile saved")}
+function monthlyExpenses(){return db.expenses.filter(x=>x.date.startsWith(month())).reduce((a,x)=>a+x.amount,0)}
+function totalDebt(){return db.loans.reduce((a,x)=>a+x.principal,0)}
+function totalInvest(){return db.investments.reduce((a,x)=>a+x.value,0)}
+function netWorth(){return db.profile.cash+totalInvest()-totalDebt()}
+function render(){
+ let p=db.profile, spent=monthlyExpenses(), inv=totalInvest(), debt=totalDebt();
+ $("hello").textContent="Hi, "+p.name+" 👋";$("networth").textContent=money(netWorth());$("cash").textContent=money(p.cash);$("investments").textContent=money(inv);$("debt").textContent=money(debt);$("income").textContent=money(p.income);$("spent").textContent=money(spent);$("invested").textContent=money(db.investments.reduce((a,x)=>a+x.sip,0));
+ let g=db.goals[0],pct=Math.min(100,g.target?g.current/g.target*100:0);$("housePct").textContent=pct.toFixed(1)+"%";$("houseSaved").textContent=money(g.current)+" / "+money(g.target);$("houseBar").style.width=pct+"%";$("houseText").textContent=`${money(Math.max(0,g.target-g.current))} remaining • ${money(g.monthly)}/month planned`;
+ $("insight").textContent=coachInsight();
+ let cats={};db.expenses.filter(x=>x.date.startsWith(month())).forEach(x=>cats[x.cat]=(cats[x.cat]||0)+x.amount);let top=Object.entries(cats).sort((a,b)=>b[1]-a[1]).slice(0,5);$("topSpend").innerHTML=top.map(x=>`<div class="item"><div class="row"><b>${esc(x[0])}</b><span>${money(x[1])}</span></div></div>`).join("")||`<div class="empty">No expenses this month.</div>`;
+ let count=db.expenses.filter(x=>x.date.startsWith(month())).length;$("eMonth").textContent=money(spent);$("eAvg").textContent=money(count?spent/new Set(db.expenses.filter(x=>x.date.startsWith(month())).map(x=>x.date)).size:0);$("eCount").textContent=count;
+ $("categories").innerHTML=top.map(x=>`<div class="item"><div class="row"><span>${esc(x[0])}</span><b>${money(x[1])}</b></div><div class="bar" style="margin-top:8px"><i style="width:${spent?x[1]/spent*100:0}%"></i></div></div>`).join("")||`<div class="empty">No category data.</div>`;
+ $("expenseList").innerHTML=db.expenses.slice().reverse().slice(0,30).map((x,i)=>`<div class="item"><div class="row"><div><b>${esc(x.item)}</b><div class="small">${esc(x.cat)} • ${x.date}</div></div><b>${money(x.amount)}</b></div></div>`).join("");
+ $("gHouse").textContent=money(g.current);$("gHouseMeta").textContent=`Target ${money(g.target)} • ${money(g.monthly)}/month`;$("gBar").style.width=pct+"%";$("scenarios").innerHTML=[0,10000,20000].map(extra=>{let m=g.monthly+extra, months=monthsToGoal(g.target,g.current,m,g.rate);return `<div class="item"><div class="row"><span>${money(m)}/month</span><b>${months?months+" months":"—"}</b></div><div class="small">Extra contribution: ${money(extra)}</div></div>`}).join("");
+ $("dOutstanding").textContent=money(debt);$("dEmi").textContent=money(db.loans.reduce((a,x)=>a+x.emi,0));$("dCount").textContent=db.loans.length;
+ $("loanList").innerHTML=db.loans.map((x,i)=>`<div class="card"><div class="row"><h3>${esc(x.name)}</h3><span class="pill">${x.rate}%</span></div><div class="grid3"><div class="stat"><span>Balance</span><b>${money(x.principal)}</b></div><div class="stat"><span>EMI</span><b>${money(x.emi)}</b></div><div class="stat"><span>Months</span><b>${x.remaining}</b></div></div></div>`).join("");
+ $("iTotal").textContent=money(inv);$("iSip").textContent=money(db.investments.reduce((a,x)=>a+x.sip,0));$("iCount").textContent=db.investments.length;
+ $("investList").innerHTML=db.investments.map(x=>`<div class="item"><div class="row"><div><b>${esc(x.name)}</b><div class="small">${esc(x.type)} • SIP ${money(x.sip)}</div></div><b>${money(x.value)}</b></div></div>`).join("");
+ let types={};db.investments.forEach(x=>types[x.type]=(types[x.type]||0)+x.value);$("allocation").innerHTML=Object.entries(types).map(x=>`<div class="item"><div class="row"><span>${esc(x[0])}</span><b>${money(x[1])}</b></div></div>`).join("");
+ $("pName").value=p.name;$("pIncome").value=p.income;$("pCash").value=p.cash;$("pEmergency").value=p.emergency;$("pHouse").value=p.house;$("pYears").value=p.years;renderChat();
+}
+function coachInsight(){let p=db.profile,s=monthlyExpenses(),rate=p.income?((p.income-s)/p.income*100):0;if(s>p.income)return"⚠️ Your current monthly spending is above income. Review discretionary categories first.";if(rate<20)return`Your savings rate is about ${rate.toFixed(0)}%. Try to move toward 20–30% if your goals allow it.`;if(rate<35)return`Your savings rate is about ${rate.toFixed(0)}%. Good base. Protect your house fund from lifestyle creep.`;return`Strong month: roughly ${rate.toFixed(0)}% remains after tracked spending. Direct part of the surplus toward your highest-priority goal.`}
+function openExpense(){$("mtitle").textContent="Add Expense";$("mbody").innerHTML=`<div class="field"><label>Date</label><input id="xDate" type="date" value="${today()}"></div><div class="field"><label>Item</label><input id="xItem" placeholder="e.g. Dinner"></div><div class="field"><label>Category</label><select id="xCat">${["Food","Groceries","Travel","Bills","Shopping","Home","Health","Entertainment","Family","EMI","Education","Other"].map(x=>`<option>${x}</option>`).join("")}</select></div><div class="field"><label>Amount (₹)</label><input id="xAmount" type="number" min="0"></div><button style="width:100%" onclick="saveExpense()">Save Expense</button>`;$("modal").classList.remove("hidden")}
+function saveExpense(){let a=+$("xAmount").value;if(!a){toast("Enter an amount.");return}db.expenses.push({date:$("xDate").value||today(),item:$("xItem").value||"Expense",cat:$("xCat").value,amount:a});save();closeModal();render();toast("Expense saved")}
+function openLoan(){$("mtitle").textContent="Add Loan";$("mbody").innerHTML=`<div class="field"><label>Loan name</label><input id="lName" placeholder="Personal Loan"></div><div class="grid"><div class="field"><label>Outstanding ₹</label><input id="lPrincipal" type="number"></div><div class="field"><label>Interest %</label><input id="lRate" type="number" step=".1"></div></div><div class="grid"><div class="field"><label>EMI ₹</label><input id="lEmi" type="number"></div><div class="field"><label>Remaining months</label><input id="lMonths" type="number"></div></div><button style="width:100%" onclick="saveLoan()">Save Loan</button>`;$("modal").classList.remove("hidden")}
+function saveLoan(){db.loans.push({name:$("lName").value||"Loan",principal:+$("lPrincipal").value||0,rate:+$("lRate").value||0,emi:+$("lEmi").value||0,remaining:+$("lMonths").value||0});save();closeModal();render();toast("Loan added")}
+function openInvestment(){$("mtitle").textContent="Add Investment";$("mbody").innerHTML=`<div class="field"><label>Name</label><input id="vName" placeholder="Nifty 50 Index Fund"></div><div class="field"><label>Type</label><select id="vType"><option>Mutual Fund</option><option>Stocks</option><option>FD</option><option>PPF</option><option>EPF</option><option>NPS</option><option>Gold</option><option>Cash</option><option>Other</option></select></div><div class="grid"><div class="field"><label>Current value ₹</label><input id="vValue" type="number"></div><div class="field"><label>Monthly SIP ₹</label><input id="vSip" type="number"></div></div><button style="width:100%" onclick="saveInvestment()">Save Investment</button>`;$("modal").classList.remove("hidden")}
+function saveInvestment(){db.investments.push({name:$("vName").value||"Investment",type:$("vType").value,value:+$("vValue").value||0,sip:+$("vSip").value||0});save();closeModal();render();toast("Investment added")}
+function monthsToGoal(target,current,monthly,annual){if(monthly<=0)return null;let r=(annual||0)/100/12,b=current,n=0;while(b<target&&n<600){b=b*(1+r)+monthly;n++}return b>=target?n:null}
+function calculateGoal(){let t=+$("goalTarget").value,c=+$("goalCurrent").value,m=+$("goalMonthly").value,r=+$("goalReturn").value;let n=monthsToGoal(t,c,m,r);$("goalResult").innerHTML=n?`<div class="item"><b>Estimated time: ${n} months (~${(n/12).toFixed(1)} years)</b><div class="small">Approximation assuming a constant return and contribution.</div></div>`:`<div class="item">Increase the monthly contribution or check the target/current values.</div>`}
+function prepay(){let x=+$("extraPay").value;if(!x){toast("Enter extra payment.");return}let l=db.loans[0];if(!l){toast("Add a loan first.");return}let months=monthsToGoal(l.principal,0,l.emi+x,l.rate);let base=monthsToGoal(l.principal,0,l.emi,l.rate);$("prepayResult").innerHTML=`<div class="item">At ${money(l.emi+x)}/month, a simplified estimate is <b>${months||"—"} months</b>, versus <b>${base||l.remaining} months</b> at the current EMI. Actual loan schedules may differ.</div>`}
+function renderChat(){$("chat").innerHTML=db.chat.slice(-10).map(x=>`<div class="item"><b>${x.role==="user"?"You":"Coach"}</b><p style="margin:7px 0 0">${esc(x.text)}</p></div>`).join("")||`<div class="empty">Ask about spending, saving, debt, goals or purchases.</div>`}
+function localCoach(q){let l=q.toLowerCase(),p=db.profile,s=monthlyExpenses();if(l.includes("afford")||l.includes("buy"))return`Before buying, compare the price with your cash buffer, current EMI/debt, monthly surplus and top goal. Your tracked monthly spending is ${money(s)} and your income is ${money(p.income)}. A purchase that materially delays your house or emergency-fund goal deserves a cooling-off period.`;if(l.includes("loan")||l.includes("prepay"))return"Compare the guaranteed interest saved by prepayment with the expected after-tax return and liquidity value of investing. Keep an adequate emergency reserve before making a large prepayment.";if(l.includes("save")||l.includes("saving"))return"Automate your priorities on salary day: emergency fund first if incomplete, then high-priority debt/goal funding, then long-term investments. Track the savings rate rather than only the rupee amount.";if(l.includes("house")||l.includes("home")){let g=db.goals[0];return`Your house goal is ${money(g.target)} with ${money(g.current)} tracked today. At ${money(g.monthly)}/month, use the Goal Calculator to test different contribution and return assumptions.`}return coachInsight()+" Ask me about a specific purchase, loan, goal or saving decision."}
+async function ask(){let q=$("q").value.trim();if(!q)return;db.chat.push({role:"user",text:q});$("q").value="";let ans=localCoach(q);if(AI_CONFIG.enabled&&AI_CONFIG.endpoint){try{let res=await fetch(AI_CONFIG.endpoint,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({question:q,profile:db.profile,expenses:db.expenses,loans:db.loans,investments:db.investments,goals:db.goals})});let j=await res.json();ans=j.answer||ans}catch(e){ans+="\nAI endpoint unavailable; using local coach."}}db.chat.push({role:"assistant",text:ans});save();renderChat()}
+function exportData(){let b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="personal-finance-os-backup.json";a.click();URL.revokeObjectURL(a.href)}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();location.reload()}catch(x){toast("Invalid backup")}};r.readAsText(f)}
+function resetAll(){if(confirm("Delete all finance data stored on this device?")){localStorage.removeItem(KEY);location.reload()}}
+function closeModal(){$("modal").classList.add("hidden")}
+init();show("home");
+</script>
+</body>
+</html>
