@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<title>Fit Nutrition Tracker</title>
+<style>
+*{box-sizing:border-box}
+:root{--bg:#f5f7fb;--card:#fff;--text:#172033;--muted:#6b7280;--line:#e5e7eb;--primary:#2563eb;--green:#059669;--orange:#ea580c;--red:#dc2626;--purple:#7c3aed;--input:#fff;--soft:#f8fafc;--buttontext:#fff;--darkhero:#0f172a}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);transition:.2s}
+body.darkmode{--bg:#0b1120;--card:#111827;--text:#f1f5f9;--muted:#94a3b8;--line:#263244;--input:#0f172a;--soft:#172033;--buttontext:#fff;--darkhero:#020617}
+body.darkmode .macro,body.darkmode input,body.darkmode select,body.darkmode .quick button{background:var(--soft);color:var(--text)}
+body.darkmode .calHero{background:var(--darkhero)}
+body.darkmode .calHero .calSub{color:#94a3b8}
+body.darkmode .calProgress{background:#1e293b}
+body.darkmode .donut:after{background:var(--card)}
+body.darkmode .secondary{background:#1e293b;color:#bfdbfe}
+body.darkmode .dark{background:#334155}
+body.darkmode .settings{background:var(--card)}
+body.darkmode .tiny{color:#94a3b8}
+.wrap{max-width:1100px;margin:auto;padding:16px;padding-bottom:40px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+h1{font-size:25px;margin:0}h2{font-size:18px;margin:0 0 14px}h3{font-size:15px;margin:0}
+.muted{color:var(--muted);font-size:13px}.tiny{font-size:11px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 5px 20px rgba(15,23,42,.05);margin-bottom:14px}
+.datebar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+input,select,button{font:inherit}
+input,select{width:100%;padding:12px;border:1px solid #d1d5db;border-radius:11px;background:#fff;color:var(--text)}
+button{border:0;border-radius:11px;padding:12px 14px;background:var(--primary);color:#fff;font-weight:700;cursor:pointer}
+button.secondary{background:#eef2ff;color:#3730a3}button.dark{background:#334155}button.danger{background:var(--red)}
+button.small{padding:7px 9px;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.macro{padding:14px;border-radius:15px;background:#f8fafc;border:1px solid var(--line)}
+.macro .label{font-size:12px;color:var(--muted)}.macro .value{font-size:20px;font-weight:800;margin:5px 0}
+.progress{height:8px;background:#e5e7eb;border-radius:20px;overflow:hidden}.progress span{display:block;height:100%;width:0;background:var(--primary);border-radius:20px}
+.progress.green span{background:var(--green)}.progress.orange span{background:var(--orange)}.progress.purple span{background:var(--purple)}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+.calHero{background:#0f172a;color:#fff;border-radius:18px;padding:20px}
+.calNum{font-size:35px;font-weight:850}.calSub{color:#cbd5e1;font-size:13px}
+.calProgress{height:10px;background:#334155;border-radius:20px;overflow:hidden;margin:12px 0}.calProgress span{display:block;height:100%;background:#fff;width:0}
+.pie{display:flex;align-items:center;gap:18px}.donut{width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--primary) 0deg,#dbeafe 0deg);position:relative;flex:none}
+.donut:after{content:"";position:absolute;inset:27px;background:#fff;border-radius:50%}
+.legend div{font-size:12px;margin:7px 0}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label{display:block;font-size:12px;font-weight:700;margin:10px 0 5px}
+.full{grid-column:1/-1}
+.addrow{display:flex;gap:8px;margin-top:12px}.addrow button{flex:1}
+.foodrow,.mealrow,.insight{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}
+.foodrow:last-child,.mealrow:last-child{border-bottom:0}
+.badge{font-size:11px;padding:5px 8px;border-radius:20px;background:#eef2ff;color:#3730a3;white-space:nowrap}
+.good{color:var(--green)}.warn{color:var(--orange)}.bad{color:var(--red)}
+.mealTitle{display:flex;align-items:center;gap:8px}.mealIcon{font-size:18px}
+.nutrient{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:9px 0}.nutrient .bar{grid-column:1/-1}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:12px}th,td{text-align:left;padding:9px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+.empty{text-align:center;padding:28px;color:var(--muted);font-size:13px}
+.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:14px}.tab{background:#e2e8f0;color:#334155;white-space:nowrap}.tab.active{background:#2563eb;color:#fff}
+.quick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.quick button{background:#f1f5f9;color:#334155;text-align:left}
+.settings{display:none}.settings.open{display:block}
+@media(max-width:800px){.grid{grid-template-columns:1fr 1fr}.hero,.two{grid-template-columns:1fr}.quick{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.wrap{padding:12px}.grid{grid-template-columns:1fr 1fr}.macro .value{font-size:17px}.calNum{font-size:31px}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.datebar input{max-width:180px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div><h1>🥗 Fit Nutrition</h1><div class="muted">Calories, macros, fibre & key vitamins</div></div>
+  <div style="display:flex;gap:7px"><button class="secondary small" onclick="toggleDark()" id="themeBtn">🌙</button><button class="secondary small" onclick="toggleSettings()">⚙️ Goals</button></div>
+</header>
+
+<div class="tabs">
+<button class="tab active" onclick="showTab('today',this)">Today</button>
+<button class="tab" onclick="showTab('history',this)">History</button>
+<button class="tab" onclick="showTab('foods',this)">Foods</button>
+</div>
+
+<section id="today">
+<div class="datebar"><button class="small secondary" onclick="changeDay(-1)">‹</button><input type="date" id="date" onchange="render()"><button class="small secondary" onclick="changeDay(1)">›</button><button class="small dark" onclick="today()">Today</button></div>
+
+<div class="hero">
+<div class="calHero">
+<div class="calSub">CALORIES</div>
+<div class="calNum"><span id="cal">0</span> <small>/ <span id="calGoal">2200</span> kcal</small></div>
+<div class="calProgress"><span id="calBar"></span></div>
+<div class="calSub"><b id="calRemain">2200</b> kcal remaining</div>
+</div>
+<div class="card" style="margin:0">
+<h2>Macro balance</h2>
+<div class="pie"><div class="donut" id="donut"></div><div class="legend" id="legend"></div></div>
+</div>
+</div>
+
+<div class="grid" style="margin-top:14px">
+<div class="macro"><div class="label">💪 Protein</div><div class="value" id="protein">0 / 140 g</div><div class="progress green"><span id="proteinBar"></span></div><div class="tiny" id="proteinLeft"></div></div>
+<div class="macro"><div class="label">🍚 Carbs</div><div class="value" id="carbs">0 / 250 g</div><div class="progress"><span id="carbBar"></span></div><div class="tiny" id="carbLeft"></div></div>
+<div class="macro"><div class="label">🥑 Fat</div><div class="value" id="fat">0 / 70 g</div><div class="progress orange"><span id="fatBar"></span></div><div class="tiny" id="fatLeft"></div></div>
+<div class="macro"><div class="label">🌾 Fibre</div><div class="value" id="fibre">0 / 30 g</div><div class="progress purple"><span id="fibreBar"></span></div><div class="tiny" id="fibreLeft"></div></div>
+</div>
+
+<div class="card">
+<h2>💧 Water</h2>
+<div class="addrow">
+<button class="secondary" onclick="addWater(250)">+250 ml</button>
+<button class="secondary" onclick="addWater(500)">+500 ml</button>
+<button class="secondary" onclick="addWater(1000)">+1 L</button>
+</div>
+<div class="progress" style="margin-top:12px"><span id="waterBar"></span></div>
+<div class="tiny" id="waterText" style="margin-top:6px">0 / 3000 ml</div>
+</div>
+
+<div class="two">
+<div class="card">
+<h2>🍽️ Add Food</h2>
+<label>Meal</label><select id="meal"><option>Breakfast</option><option>Lunch</option><option>Dinner</option><option>Snack</option></select>
+<label>Search food</label><input id="search" placeholder="Type chicken, paneer, oats..." oninput="fillFoodOptions()">
+<label>Food</label><select id="food" onchange="calc()"></select>
+<div class="formgrid">
+<div><label>Quantity</label><input type="number" id="qty" value="100" min="0.1" step="0.1" oninput="calc()"></div>
+<div><label>Unit</label><select id="unit" onchange="calc()"><option>grams</option><option>ml</option><option>pieces</option><option>scoops</option></select></div>
+</div>
+<div class="info" style="margin-top:12px">
+<div class="nutrient"><span>Calories</span><b id="qcal">0 kcal</b><span>Protein</span><b id="qpro">0 g</b><span>Carbs</span><b id="qcarb">0 g</b><span>Fat</span><b id="qfat">0 g</b><span>Fibre</span><b id="qfib">0 g</b></div>
+</div>
+<div class="addrow"><button onclick="addFood()">➕ Add Food</button><button class="secondary" onclick="addCustom()">＋ Custom</button></div>
+</div>
+
+<div class="card">
+<h2>📊 Today's Nutrition Check</h2>
+<div id="insights"></div>
+</div>
+</div>
+
+<div class="card">
+<h2>🍴 Today's Meals</h2><div id="meals"></div>
+</div>
+
+<div class="card">
+<h2>🧬 Vitamins & Minerals</h2>
+<div class="grid" id="micro"></div>
+<p class="tiny" style="margin-top:12px">Micronutrient values are approximate estimates. Actual values vary by food variety, brand, cooking method and serving.</p>
+</div>
+</section>
+
+<section id="history" style="display:none">
+<div class="card"><h2>📅 Daily History</h2><div id="historyTable"></div></div>
+</section>
+
+<section id="foods" style="display:none">
+<div class="card"><h2>🥘 Food Database</h2><input id="dbSearch" placeholder="Search foods..." oninput="renderFoodDB()"><div id="foodDB" style="margin-top:10px"></div></div>
+</section>
+
+<div class="card settings" id="settings">
+<h2>🎯 Your Nutrition Targets</h2>
+<div class="formgrid">
+<div><label>Calories / day</label><input type="number" id="gCal" min="500"></div>
+<div><label>Protein (g)</label><input type="number" id="gPro" min="1"></div>
+<div><label>Carbs (g)</label><input type="number" id="gCarb" min="1"></div>
+<div><label>Fat (g)</label><input type="number" id="gFat" min="1"></div>
+<div><label>Fibre (g)</label><input type="number" id="gFib" min="1"></div>
+<div><label>Water (ml)</label><input type="number" id="gWater" min="500"></div>
+</div>
+<div class="addrow"><button onclick="saveGoals()">Save Goals</button><button class="dark" onclick="exportJSON()">Backup Data</button><button class="secondary" onclick="importJSON()">Restore</button></div>
+<p class="tiny">For gym goals, set protein based on your body weight and your training goal. These are personal targets, not medical advice.</p>
+</div>
+</div>
+
+<script>
+const defaultFoods=[
+{name:"Oats",cat:"Breakfast",unit:"grams",cal:389,pro:13.2,carb:66.3,fat:6.9,fib:10.1,ca:54,fe:4.7,k:429,vc:0,vd:0,b12:0},
+{name:"Muesli",cat:"Breakfast",unit:"grams",cal:370,pro:10,carb:68,fat:7,fib:8,ca:50,fe:3,k:300,vc:2,vd:0,b12:.5},
+{name:"Egg",cat:"Protein",unit:"pieces",weight:50,cal:72,pro:6.3,carb:.4,fat:4.8,fib:0,ca:28,fe:0.9,k:69,vc:0,vd:1.1,b12:.45},
+{name:"Chicken Breast",cat:"Protein",unit:"grams",cal:165,pro:31,carb:0,fat:3.6,fib:0,ca:15,fe:1,k:256,vc:0,vd:.1,b12:.3},
+{name:"Chicken Thigh",cat:"Protein",unit:"grams",cal:209,pro:26,carb:0,fat:10.9,fib:0,ca:12,fe:1.3,k:223,vc:0,vd:.1,b12:.3},
+{name:"Fish",cat:"Protein",unit:"grams",cal:140,pro:24,carb:0,fat:5,fib:0,ca:30,fe:.8,k:350,vc:0,vd:5,b12:2},
+{name:"Paneer",cat:"Protein",unit:"grams",cal:265,pro:18.3,carb:6.1,fat:20.8,fib:0,ca:208,fe:.2,k:138,vc:0,vd:.1,b12:1.2},
+{name:"Tofu",cat:"Protein",unit:"grams",cal:76,pro:8,carb:1.9,fat:4.8,fib:.3,ca:350,fe:5.4,k:121,vc:0,vd:0,b12:0},
+{name:"Whey Protein",cat:"Protein",unit:"scoops",weight:30,cal:120,pro:24,carb:3,fat:2,fib:0,ca:120,fe:.5,k:150,vc:0,vd:0,b12:.5},
+{name:"Dal",cat:"Indian",unit:"grams",cal:116,pro:9,carb:20,fat:.4,fib:7.9,ca:19,fe:3.3,k:369,vc:1.5,vd:0,b12:0},
+{name:"Rajma",cat:"Indian",unit:"grams",cal:127,pro:8.7,carb:22.8,fat:.5,fib:6.4,ca:28,fe:2.9,k:405,vc:1.2,vd:0,b12:0},
+{name:"Chickpeas",cat:"Indian",unit:"grams",cal:164,pro:8.9,carb:27.4,fat:2.6,fib:7.6,ca:49,fe:2.9,k:291,vc:1.3,vd:0,b12:0},
+{name:"Rice Cooked",cat:"Indian",unit:"grams",cal:130,pro:2.7,carb:28.2,fat:.3,fib:.4,ca:10,fe:.2,k:35,vc:0,vd:0,b12:0},
+{name:"Roti",cat:"Indian",unit:"pieces",weight:40,cal:110,pro:3.5,carb:18,fat:3,fib:2.5,ca:15,fe:1.2,k:90,vc:0,vd:0,b12:0},
+{name:"Dosa",cat:"Indian",unit:"pieces",weight:80,cal:168,pro:3.9,carb:28,fat:5,fib:1,ca:20,fe:1.2,k:80,vc:0,vd:0,b12:0},
+{name:"Idli",cat:"Indian",unit:"pieces",weight:40,cal:58,pro:2,carb:12,fat:.2,fib:.5,ca:10,fe:.4,k:30,vc:0,vd:0,b12:0},
+{name:"Curd / Yogurt",cat:"Dairy",unit:"grams",cal:61,pro:3.5,carb:4.7,fat:3.3,fib:0,ca:121,fe:.1,k:155,vc:.5,vd:.1,b12:.4},
+{name:"Milk",cat:"Dairy",unit:"ml",cal:61,pro:3.2,carb:4.8,fat:3.3,fib:0,ca:113,fe:0,k:132,vc:0,vd:1.3,b12:.4},
+{name:"Banana",cat:"Fruit",unit:"pieces",weight:118,cal:105,pro:1.3,carb:27,fat:.4,fib:3.1,ca:6,fe:.3,k:422,vc:10.3,vd:0,b12:0},
+{name:"Apple",cat:"Fruit",unit:"pieces",weight:182,cal:95,pro:.5,carb:25.1,fat:.3,fib:4.4,ca:11,fe:.2,k:195,vc:8.4,vd:0,b12:0},
+{name:"Orange",cat:"Fruit",unit:"pieces",weight:130,cal:62,pro:1.2,carb:15.4,fat:.2,fib:3.1,ca:52,fe:.1,k:237,vc:69.7,vd:0,b12:0},
+{name:"Peanut",cat:"Nuts",unit:"grams",cal:567,pro:25.8,carb:16.1,fat:49.2,fib:8.5,ca:92,fe:4.6,k:705,vc:0,vd:0,b12:0},
+{name:"Almonds",cat:"Nuts",unit:"grams",cal:579,pro:21.2,carb:21.6,fat:49.9,fib:12.5,ca:269,fe:3.7,k:733,vc:0,vd:0,b12:0},
+{name:"Olive Oil",cat:"Fat",unit:"grams",cal:884,pro:0,carb:0,fat:100,fib:0,ca:1,fe:0.6,k:1,vc:0,vd:0,b12:0},
+{name:"Avocado",cat:"Fruit",unit:"grams",cal:160,pro:2,carb:8.5,fat:14.7,fib:6.7,ca:12,fe:.6,k:485,vc:10,vd:0,b12:0}
+];
+
+let db=JSON.parse(localStorage.getItem("fitNutrition")||"null")||{
+goals:{cal:2200,pro:140,carb:250,fat:70,fib:30,water:3000},
+logs:[],water:{}
+};
+function $(id){return document.getElementById(id)}
+function save(){localStorage.setItem("fitNutrition",JSON.stringify(db))}
+function toggleDark(){
+ document.body.classList.toggle("darkmode");
+ localStorage.setItem("fitNutritionDark",document.body.classList.contains("darkmode")?"1":"0");
+ $("themeBtn").textContent=document.body.classList.contains("darkmode")?"☀️":"🌙";
+}
+function day(){return $("date").value}
+function foodList(){return defaultFoods}
+function selectedFood(){return foodList().find(f=>f.name==$("food").value)}
+function fmt(n){return Number(n||0).toFixed(1).replace(".0","")}
+function fillFoodOptions(){
+ let q=($("search").value||"").toLowerCase();
+ let arr=foodList().filter(f=>f.name.toLowerCase().includes(q)||f.cat.toLowerCase().includes(q));
+ $("food").innerHTML=arr.map(f=>`<option>${f.name}</option>`).join("");
+ calc();
+}
+function calc(){
+ let f=selectedFood();if(!f)return;
+ $("unit").value=f.unit;
+ let q=+$("qty").value||0;
+ let factor=(f.unit=="grams"||f.unit=="ml")?q/100:q;
+ let vals=["cal","pro","carb","fat","fib"].map(k=>(f[k]||0)*factor);
+ ["qcal","qpro","qcarb","qfat","qfib"].forEach((id,i)=>$(id).textContent=fmt(vals[i])+(i==0?" kcal":" g"));
+}
+function addFood(){
+ let f=selectedFood();let q=+$("qty").value||0;if(!f||q<=0)return alert("Enter a valid quantity.");
+ let factor=(f.unit=="grams"||f.unit=="ml")?q/100:q;
+ let entry={id:Date.now(),date:day(),meal:$("meal").value,food:f.name,qty:q,unit:f.unit,
+ cal:(f.cal||0)*factor,pro:(f.pro||0)*factor,carb:(f.carb||0)*factor,fat:(f.fat||0)*factor,fib:(f.fib||0)*factor,
+ ca:(f.ca||0)*factor,fe:(f.fe||0)*factor,k:(f.k||0)*factor,vc:(f.vc||0)*factor,vd:(f.vd||0)*factor,b12:(f.b12||0)*factor};
+ db.logs.push(entry);save();render();
+ $("qty").value=f.unit=="pieces"||f.unit=="scoops"?1:100;calc();
+}
+function addCustom(){
+ let name=prompt("Food name");if(!name)return;
+ let cal=+prompt("Calories for this serving")||0,pro=+prompt("Protein (g)")||0,carb=+prompt("Carbs (g)")||0,fat=+prompt("Fat (g)")||0,fib=+prompt("Fibre (g)")||0;
+ let entry={id:Date.now(),date:day(),meal:$("meal").value,food:name,qty:1,unit:"serving",cal,pro,carb,fat,fib,ca:0,fe:0,k:0,vc:0,vd:0,b12:0,custom:true};
+ db.logs.push(entry);save();render();
+}
+function addWater(x){db.water[day()]=(db.water[day()]||0)+x;save();render()}
+function dayLogs(){return db.logs.filter(x=>x.date==day())}
+function totals(arr){
+ return ["cal","pro","carb","fat","fib","ca","fe","k","vc","vd","b12"].reduce((o,k)=>{o[k]=arr.reduce((s,x)=>s+(+x[k]||0),0);return o},{})
+}
+function bar(id,val,goal){$(id).style.width=Math.min(100,goal?val/goal*100:0)+"%"}
+function render(){
+ let t=totals(dayLogs()),g=db.goals;
+ $("cal").textContent=fmt(t.cal);$("calGoal").textContent=g.cal;$("calRemain").textContent=fmt(Math.max(0,g.cal-t.cal));
+ $("protein").textContent=fmt(t.pro)+" / "+g.pro+" g";$("carbs").textContent=fmt(t.carb)+" / "+g.carb+" g";$("fat").textContent=fmt(t.fat)+" / "+g.fat+" g";$("fibre").textContent=fmt(t.fib)+" / "+g.fib+" g";
+ $("proteinLeft").textContent=t.pro>=g.pro?"✓ Goal met":fmt(g.pro-t.pro)+" g left";
+ $("carbLeft").textContent=t.carb>=g.carb?"✓ Goal reached":fmt(g.carb-t.carb)+" g left";
+ $("fatLeft").textContent=t.fat>g.fat?"⚠ Over target":fmt(g.fat-t.fat)+" g remaining";
+ $("fibLeft").textContent=t.fib>=g.fib?"✓ Goal met":fmt(g.fib-t.fib)+" g left";
+ bar("calBar",t.cal,g.cal);bar("proteinBar",t.pro,g.pro);bar("carbBar",t.carb,g.carb);bar("fatBar",t.fat,g.fat);bar("fibreBar",t.fib,g.fib);
+ let totalMacro=t.pro*4+t.carb*4+t.fat*9||1,p1=t.pro*4/totalMacro*360,p2=t.carb*4/totalMacro*360;
+ $("donut").style.background=`conic-gradient(#2563eb 0deg ${p1}deg,#059669 ${p1}deg ${p1+p2}deg,#ea580c ${p1+p2}deg 360deg)`;
+ $("legend").innerHTML=`<div><span class="dot" style="background:#2563eb"></span>Protein ${Math.round(t.pro*4/totalMacro*100)}%</div><div><span class="dot" style="background:#059669"></span>Carbs ${Math.round(t.carb*4/totalMacro*100)}%</div><div><span class="dot" style="background:#ea580c"></span>Fat ${Math.round(t.fat*9/totalMacro*100)}%</div>`;
+ let w=db.water[day()]||0;$("waterText").textContent=fmt(w/1000)+" / "+fmt(g.water/1000)+" L";bar("waterBar",w,g.water);
+ renderMeals(dayLogs(),t);renderInsights(t);renderMicro(t);renderHistory();renderFoodDB();
+}
+function renderMeals(logs,t){
+ if(!logs.length){$("meals").innerHTML='<div class="empty">No food logged today. Add your first meal above.</div>';return}
+ let groups={};logs.forEach(x=>(groups[x.meal]??=[]).push(x));
+ let icons={Breakfast:"🌅",Lunch:"🍛",Dinner:"🌙",Snack:"🍎"};
+ $("meals").innerHTML=Object.entries(groups).map(([m,arr])=>`<div class="mealrow"><div><div class="mealTitle"><span class="mealIcon">${icons[m]||"🍽️"}</span><b>${m}</b></div><div class="tiny">${arr.map(x=>x.food+" ("+fmt(x.qty)+" "+x.unit+")").join(" · ")}</div></div><div><b>${fmt(arr.reduce((s,x)=>s+x.cal,0))} kcal</b><br><span class="tiny">${fmt(arr.reduce((s,x)=>s+x.pro,0))}g protein</span></div></div>`).join("");
+ $("meals").innerHTML+=logs.slice().reverse().map(x=>`<div class="foodrow"><span><b>${x.food}</b><br><span class="tiny">${x.meal} · ${fmt(x.qty)} ${x.unit}</span></span><span>${fmt(x.cal)} kcal · ${fmt(x.pro)}g <button class="danger small" onclick="del(${x.id})">×</button></span></div>`).join("");
+}
+function renderInsights(t){
+ let g=db.goals,a=[];
+ const check=(name,val,goal,unit,kind)=>{let pct=goal?val/goal*100:0;if(kind=="low"&&pct<60)a.push([`⚠️ ${name} is low`,`Only ${fmt(val)} ${unit} of ${goal} ${unit}.`,`warn`]);else if(kind=="protein"&&pct>=100)a.push([`💪 Protein goal reached`,`You have ${fmt(val)} g protein today.`,`good`]);else if(kind=="high"&&pct>110)a.push([`⚠️ ${name} is high`,`You are above your ${goal} ${unit} target.`,`bad`]);else a.push([`✅ ${name} is on track`,`${fmt(val)} / ${goal} ${unit}`,`good`])};
+ check("Protein",t.pro,g.pro,"g","protein");check("Fibre",t.fib,g.fib,"g","low");check("Carbs",t.carb,g.carb,"g","normal");check("Fat",t.fat,g.fat,"g","high");
+ if(t.cal>g.cal)a.push(["🔥 Calories over target",`${fmt(t.cal-g.cal)} kcal above your target.`,"bad"]);else a.push(["🔥 Calories remaining",`${fmt(g.cal-t.cal)} kcal available today.`,"good"]);
+ $("insights").innerHTML=a.map(x=>`<div class="insight"><span><b>${x[0]}</b><br><span class="tiny">${x[1]}</span></span><span class="${x[2]}">●</span></div>`).join("");
+}
+function renderMicro(t){
+ let items=[["Calcium","ca","mg",1000],["Iron","fe","mg",8],["Potassium","k","mg",3500],["Vitamin C","vc","mg",75],["Vitamin D","vd","µg",15],["B12","b12","µg",2.4]];
+ $("micro").innerHTML=items.map(([n,k,u,goal])=>{let v=t[k]||0;return `<div class="macro"><div class="label">${n}</div><div class="value">${fmt(v)} ${u}</div><div class="progress"><span style="width:${Math.min(100,v/goal*100)}%"></span></div><div class="tiny">${Math.round(v/goal*100)}% of reference</div></div>`}).join("");
+}
+function del(id){db.logs=db.logs.filter(x=>x.id!=id);save();render()}
+function changeDay(n){let d=new Date(day()+"T12:00:00");d.setDate(d.getDate()+n);$("date").value=d.toISOString().slice(0,10);render()}
+function today(){$("date").value=new Date().toISOString().slice(0,10);render()}
+function showTab(id,el){["today","history","foods"].forEach(x=>$(x).style.display=x==id?"block":"none");document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));el.classList.add("active")}
+function toggleSettings(){let s=$("settings");s.classList.toggle("open");$("gCal").value=db.goals.cal;$("gPro").value=db.goals.pro;$("gCarb").value=db.goals.carb;$("gFat").value=db.goals.fat;$("gFib").value=db.goals.fib;$("gWater").value=db.goals.water}
+function saveGoals(){db.goals={cal:+$("gCal").value||2200,pro:+$("gPro").value||140,carb:+$("gCarb").value||250,fat:+$("gFat").value||70,fib:+$("gFib").value||30,water:+$("gWater").value||3000};save();render();alert("Goals saved.")}
+function renderHistory(){
+ let by={};db.logs.forEach(x=>{by[x.date]=by[x.date]||[];by[x.date].push(x)});
+ let days=Object.keys(by).sort().reverse();
+ $("historyTable").innerHTML=days.length?`<div class="tablewrap"><table><tr><th>Date</th><th>Calories</th><th>Protein</th><th>Carbs</th><th>Fat</th><th>Fibre</th></tr>${days.map(d=>{let t=totals(by[d]);return `<tr><td>${d}</td><td>${fmt(t.cal)}</td><td class="${t.pro>=db.goals.pro?'good':'warn'}">${fmt(t.pro)}g</td><td>${fmt(t.carb)}g</td><td>${fmt(t.fat)}g</td><td>${fmt(t.fib)}g</td></tr>`}).join("")}</table></div>`:"<div class='empty'>No history yet.</div>";
+}
+function renderFoodDB(){
+ let q=(($("dbSearch")?.value)||"").toLowerCase();
+ $("foodDB").innerHTML=foodList().filter(f=>f.name.toLowerCase().includes(q)||f.cat.toLowerCase().includes(q)).map(f=>`<div class="foodrow"><span><b>${f.name}</b><br><span class="tiny">${f.cat} · per ${f.unit=="pieces"||f.unit=="scoops"?f.unit:"100 "+f.unit}</span></span><span><b>${fmt(f.cal)} kcal</b><br><span class="tiny">P ${fmt(f.pro)} · C ${fmt(f.carb)} · F ${fmt(f.fat)} · Fi ${fmt(f.fib)}</span></span></div>`).join("");
+}
+function exportJSON(){let b=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="fit-nutrition-backup.json";a.click()}
+function importJSON(){let i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=()=>{let r=new FileReader();r.onload=()=>{try{db=JSON.parse(r.result);save();render();alert("Backup restored.")}catch(e){alert("Invalid backup file.")}};r.readAsText(i.files[0])};i.click()}
+if(localStorage.getItem("fitNutritionDark")=="1"){
+ document.body.classList.add("darkmode");
+ $("themeBtn").textContent="☀️";
+}
+$("date").value=new Date().toISOString().slice(0,10);fillFoodOptions();render();
+</script>
+</body>
+</html>
