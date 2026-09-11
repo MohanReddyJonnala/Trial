@@ -1,0 +1,85 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Food Calories & Protein Tracker</title>
+<style>
+body{font-family:Arial;margin:0;background:#f4f6f8;color:#17202a}.wrap{max-width:1100px;margin:auto;padding:24px}
+h1{margin:0}.muted{color:#68717d}.cards{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin:20px 0}
+.card{background:white;border:1px solid #e2e6eb;border-radius:14px;padding:18px;box-shadow:0 3px 12px #0001}
+.big{font-size:25px;font-weight:bold;margin-top:8px}.orange{color:#ea580c}.green{color:#059669}.blue{color:#2563eb}
+.main{display:grid;grid-template-columns:360px 1fr;gap:18px}label{display:block;font-weight:bold;font-size:13px;margin:12px 0 6px}
+input,select,button{width:100%;padding:11px;border:1px solid #d1d5db;border-radius:9px;font-size:14px;box-sizing:border-box}
+button{background:#2563eb;color:white;border:0;font-weight:bold;cursor:pointer;margin-top:10px}.dark{background:#374151}.red{background:#dc2626}
+.info{background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:12px;margin-top:12px}.row{display:flex;justify-content:space-between;margin:7px 0}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px 7px;border-bottom:1px solid #e5e7eb;text-align:left}.empty{text-align:center;padding:40px;color:#68717d}
+@media(max-width:800px){.cards{grid-template-columns:1fr 1fr}.main{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<h1>🥗 Food Calories & Protein Tracker</h1><p class="muted">Select a food and quantity to automatically calculate calories and protein.</p>
+<div class="cards">
+<div class="card"><div class="muted">Total Calories</div><div class="big orange" id="tc">0 kcal</div></div>
+<div class="card"><div class="muted">Total Protein</div><div class="big green" id="tp">0 g</div></div>
+<div class="card"><div class="muted">Foods Logged</div><div class="big blue" id="cnt">0</div></div>
+<div class="card"><div class="muted">Average Protein</div><div class="big" id="avg">0 g</div></div>
+<div class="card"><div class="muted">Today's Protein Goal</div><div class="big" id="goalProg">0 / 140 g</div></div>
+</div>
+<div class="main"><div>
+<div class="card"><h2>Add Food</h2>
+<label>Date</label><input type="date" id="date">
+<label>Food Category</label><select id="cat" onchange="fillFoods()"><option>All</option><option>Breakfast</option><option>Protein</option><option>Other</option></select>
+<label>Food Name</label><select id="food" onchange="calc()"></select>
+<div class="info"><div class="row"><span>Per 100 g calories</span><b id="pc">-</b></div><div class="row"><span>Per 100 g protein</span><b id="pp">-</b></div></div>
+<div id="qtyWrap"><label>Quantity (grams)</label><input type="number" id="qty" value="100" min="1" oninput="calc()"></div>
+<div id="eggWrap" style="display:none"><label>Number of Eggs</label><input type="number" id="eggCount" value="1" min="1" oninput="calc()"><p class="muted" style="font-size:12px;margin:4px 0 0" id="eggEquiv"></p></div>
+<div id="milkWrap" style="display:none"><label>Milk (ml)</label><input type="number" id="milkMl" value="200" min="1" oninput="calc()"><p class="muted" style="font-size:12px;margin:4px 0 0" id="milkEquiv"></p></div>
+<div id="scoopWrap" style="display:none"><label>Number of Scoops</label><input type="number" id="scoopCount" value="1" min="1" oninput="calc()"><p class="muted" style="font-size:12px;margin:4px 0 0" id="scoopEquiv"></p></div>
+<div class="info"><div class="row"><span>Calories</span><b id="qc">0 kcal</b></div><div class="row"><span>Protein</span><b id="qp">0 g</b></div></div>
+<button onclick="add()">Add Food</button><button class="red" onclick="clearData()">Clear All</button>
+</div>
+<div class="card" style="margin-top:18px"><h2>Food Database</h2><div id="db"></div><p class="muted" style="font-size:12px">Values are approximate and may vary by brand and preparation.</p></div>
+</div>
+<div class="card"><h2>Export Data</h2><p class="muted" style="margin:0 0 12px">Download your full food log as a CSV file for backup or use in Excel/Sheets.</p><button onclick="csv()">⬇️ Download CSV (<span id="csvCount">0</span> entries)</button></div>
+<div class="card" style="margin-top:18px"><h2>Food History</h2><div id="history"></div></div>
+<div class="card" style="margin-top:18px"><h2>Daily Protein Summary</h2><div id="daily"></div></div>
+</div></div>
+<script>
+const foods=[
+["Oats","Breakfast",389,13.14],["Muesli","Breakfast",370,20],["Eggs","Protein",143,12.6],
+["Beef","Protein",250,26],["Chicken","Protein",165,31],["Fish","Protein",140,24],["Whey Protein","Protein",380,83.3],
+["Rice","Other",130,2.7],["Banana","Other",89,1.1],["Milk","Other",61,3.11]
+];
+const EGG_WEIGHT=50; // avg grams per large egg
+const MILK_DENSITY=1.03; // grams per ml of milk
+const SCOOP_WEIGHT=30; // avg grams per scoop of whey protein
+const DAILY_PROTEIN_GOAL=140; // grams
+let data=JSON.parse(localStorage.getItem("foodTracker")||"[]");
+const $=id=>document.getElementById(id);
+function fillFoods(){let c=$("cat").value; $("food").innerHTML=foods.filter(x=>c=="All"||x[1]==c).map(x=>`<option>${x[0]}</option>`).join("");calc()}
+function get(){return foods.find(x=>x[0]==$("food").value)}
+function fmt(x){return Number(x).toFixed(1)}
+function isEggSelected(f){return f&&f[0]=="Eggs"}
+function isMilkSelected(f){return f&&f[0]=="Milk"}
+function isScoopSelected(f){return f&&f[0]=="Whey Protein"}
+function calc(){let f=get();if(!f)return;let egg=isEggSelected(f),milk=isMilkSelected(f),scoop=isScoopSelected(f);
+$("eggWrap").style.display=egg?"block":"none";$("milkWrap").style.display=milk?"block":"none";$("scoopWrap").style.display=scoop?"block":"none";$("qtyWrap").style.display=(egg||milk||scoop)?"none":"block";
+let q;
+if(egg){let n=+$("eggCount").value||0;q=n*EGG_WEIGHT;$("qty").value=q;$("eggEquiv").textContent="≈ "+q+" g ("+EGG_WEIGHT+"g per egg)"}
+else if(milk){let ml=+$("milkMl").value||0;q=ml*MILK_DENSITY;$("qty").value=q;$("milkEquiv").textContent="≈ "+fmt(q)+" g ("+MILK_DENSITY+"g per ml)"}
+else if(scoop){let n=+$("scoopCount").value||0;q=n*SCOOP_WEIGHT;$("qty").value=q;$("scoopEquiv").textContent="≈ "+q+" g ("+SCOOP_WEIGHT+"g per scoop, 25g protein per scoop)"}
+else{q=+$("qty").value||0}
+$("pc").textContent=f[2]+" kcal";$("pp").textContent=f[3]+" g";$("qc").textContent=fmt(f[2]*q/100)+" kcal";$("qp").textContent=fmt(f[3]*q/100)+" g"}
+function add(){let f=get(),egg=isEggSelected(f),milk=isMilkSelected(f),scoop=isScoopSelected(f),q=+$("qty").value;if(!f||q<=0)return alert(egg?"Enter a valid number of eggs.":milk?"Enter a valid amount of milk.":scoop?"Enter a valid number of scoops.":"Enter a valid quantity.");data.push({id:Date.now(),date:$("date").value,food:f[0],cat:f[1],qty:q,eggCount:egg?+$("eggCount").value:null,milkMl:milk?+$("milkMl").value:null,scoopCount:scoop?+$("scoopCount").value:null,cal:f[2]*q/100,pro:f[3]*q/100});save();render()}
+function save(){localStorage.setItem("foodTracker",JSON.stringify(data))}
+function del(id){data=data.filter(x=>x.id!=id);save();render()}
+function clearData(){if(confirm("Delete all food entries?")){data=[];save();render()}}
+function csv(){if(!data.length)return alert("No entries.");let r=[["Date","Category","Food","Quantity (g)","Egg Count","Milk (ml)","Scoop Count","Calories","Protein"],...data.map(x=>[x.date,x.cat,x.food,x.qty,x.eggCount||"",x.milkMl||"",x.scoopCount||"",fmt(x.cal),fmt(x.pro)])];let b=new Blob([r.map(a=>a.map(v=>`"${String(v).replaceAll('"','""')}"`).join(",")).join("\n")],{type:"text/csv"}),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download="food-tracker.csv";a.click()}
+function render(){let c=data.reduce((s,x)=>s+x.cal,0),p=data.reduce((s,x)=>s+x.pro,0);$("tc").textContent=fmt(c)+" kcal";$("tp").textContent=fmt(p)+" g";$("cnt").textContent=data.length;$("avg").textContent=fmt(data.length?p/data.length:0)+" g";$("csvCount").textContent=data.length;
+let today=new Date().toISOString().slice(0,10);
+let todayPro=data.filter(x=>x.date==today).reduce((s,x)=>s+x.pro,0);
+let goalEl=$("goalProg");goalEl.textContent=fmt(todayPro)+" / "+DAILY_PROTEIN_GOAL+" g";
+goalEl.className="big "+(todayPro>=DAILY_PROTEIN_GOAL?"green":"orange");
+$("history").innerHTML=data.length?`<div style="overflow:auto"><table><tr><th>Date</th><th>Food</th><th>Qty</th><th>Calories</th><th>Protein</th><th></th></tr>${[...data].reverse().map(x=>`<tr><td>${x.date}</td><td><b>${x.food}</b><br><small>${x.cat}</small></td><td>${x.eggCount?x.eggCount+" egg"+(x.eggCount==1?"":"s")+" ("+fmt(x.qty)+"g)":x.milkMl?x.milkMl+" ml ("+fmt(x.qty)+"g)":x.scoopCount?x.scoopCount+" scoop"+(x.scoopCount==1?"":"s")+" ("+fmt(x.qty)+"g)":fmt(x.qty)+"g"}</td><td>${fmt(x.cal)} kcal</td><td>${fmt(x.pro)}g</td><td><button class="red" onclick="del(${x.id})">Delete</button></td></tr>`).join("")}</table></div>`:"<div class='empty'>No food logged yet.</div>";
+$("db").innerHTML=foods.map(x=>`<div class="row"><span><b>${x[0]}</b> (${x[1]})</span><span>${x[2]} kcal · ${x[3]}g</span></div>`).join("");
+let byDay={};data.forEach(x=>{let d=x.date||"(no date)";byDay[d]=byDay[d]||{cal:0,pro:0};byDay[d].cal+=x.cal;byDay[d].pro+=x.pro});
+let days=Object.keys(byDay).sort().reverse();
+$("daily").innerHTML=days.length?`<table><tr><th>Date</th><th>Total Protein</th><th>Total Calories</th><th>Goal (${DAILY_PROTEIN_GOAL}g)</th></tr>${days.map(d=>`<tr><td>${d}</td><td><b class="green">${fmt(byDay[d].pro)} g</b></td><td>${fmt(byDay[d].cal)} kcal</td><td>${byDay[d].pro>=DAILY_PROTEIN_GOAL?'✅ Met':'⏳ '+fmt(DAILY_PROTEIN_GOAL-byDay[d].pro)+'g left'}</td></tr>`).join("")}</table>`:"<div class='empty'>No food logged yet.</div>"}
+$("date").value=new Date().toISOString().slice(0,10);fillFoods();render();
+</script></body></html>
